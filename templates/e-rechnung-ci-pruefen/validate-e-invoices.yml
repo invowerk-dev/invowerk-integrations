@@ -1,0 +1,72 @@
+# Validate every e-invoice in a folder of this repository with invowerk.
+#
+# Copy this file to .github/workflows/validate-e-invoices.yml. On every push and
+# pull request that touches the folder, each XML or PDF invoice in it is checked
+# against the EN 16931 rules (XRechnung, ZUGFeRD / Factur-X, Peppol BIS), one
+# job per file, and the run fails when any invoice is invalid.
+#
+# Set INVOICE_DIR below and the two `paths` filters to your folder. Add the repo
+# secret INVOWERK_API_KEY (get a key at
+# https://invowerk.dev/go/tpl-e-rechnung-ci-pruefen?to=/app/api-keys); without
+# one the anonymous tier's lower limits apply.
+name: Validate e-invoices
+
+on:
+  push:
+    paths: ["invoices/**"]
+  pull_request:
+    paths: ["invoices/**"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  INVOICE_DIR: invoices
+
+jobs:
+  list:
+    name: List invoices
+    runs-on: ubuntu-latest
+    outputs:
+      files: ${{ steps.find.outputs.files }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - id: find
+        name: Find XML and PDF files
+        run: |
+          if [ -d "$INVOICE_DIR" ]; then
+            files="$(find "$INVOICE_DIR" -type f \( -iname '*.xml' -o -iname '*.pdf' \) | sort | jq -R . | jq -sc .)"
+          else
+            files='[]'
+          fi
+          echo "files=$files" >>"$GITHUB_OUTPUT"
+          echo "Invoices to check: $(jq length <<<"$files")"
+
+  validate:
+    name: Validate ${{ matrix.file }}
+    needs: list
+    # GitHub evaluates this before it expands the matrix: no invoices, no jobs.
+    if: needs.list.outputs.files != '[]'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # Callers without an API key share invowerk's check slots (HTTP 429 when
+      # all are busy); a few files at a time keeps a large folder polite.
+      max-parallel: 4
+      matrix:
+        file: ${{ fromJSON(needs.list.outputs.files) }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Validate with invowerk
+        uses: invowerk-dev/invowerk-action@v1.0.0
+        with:
+          operation: validate_invoice
+          file: ${{ matrix.file }}
+          api-key: ${{ secrets.INVOWERK_API_KEY }}
+          # explain=true adds invowerk's explanation (meaning, causes, fixes)
+          # to each finding whose rule it has one for.
+          query: |
+            explain=true
+            lang=en
+          fail-if: ".valid == false"

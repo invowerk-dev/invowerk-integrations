@@ -1,0 +1,296 @@
+{
+  "name": "Incoming e-invoice: data row + readable copy (invowerk)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Incoming e-invoices, made readable\nWatches a mailbox. For every XML or PDF attachment it:\n- reads the invoice with invowerk (**Parse Invoice**) and appends one row to a sheet: number, dates, seller, totals, IBAN;\n- for XML invoices (XRechnung), renders a readable HTML view (**Render Invoice**) and emails it to your bookkeeping address.\n\n### Setup\n1. Install the community node `@invowerk-dev/n8n-nodes-invowerk`.\n2. Get an API key: https://invowerk.dev/go/tpl-eingehende-e-rechnung-lesbar?to=/app/api-keys\n3. Connect IMAP and SMTP, pick the sheet in **Append to invoice log**, set the address in **Send readable copy**.\n4. Test: email yourself https://invowerk.dev/app-static/demo/beispiel-xrechnung.xml",
+        "height": 460,
+        "width": 460
+      },
+      "id": "15238db9-b830-5548-a97e-740334cb9d19",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Plain PDFs\n**Parse invoice** continues on error: a PDF without embedded invoice data still gets a row, with the reason in `status`.",
+        "height": 200,
+        "width": 300,
+        "color": 5
+      },
+      "id": "ffc6045d-d3c2-56ee-972e-a0111ad30e2a",
+      "name": "Note: not every PDF is an e-invoice",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Labels\n**Render readable view** uses German labels (`lang = de`). Set `en` for English.",
+        "height": 160,
+        "width": 300,
+        "color": 4
+      },
+      "id": "21d8907e-81a2-53fe-b6d9-55fc0e78635e",
+      "name": "Note: language",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "mailbox": "INBOX",
+        "postProcessAction": "read",
+        "downloadAttachments": true,
+        "format": "simple",
+        "options": {}
+      },
+      "id": "50f449b9-b85d-550d-b78d-7e177cf53601",
+      "name": "New email with invoice",
+      "type": "n8n-nodes-base.emailReadImap",
+      "typeVersion": 2.2,
+      "position": [
+        -480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// One output item per XML or PDF attachment, as binary field `data`.\nconst out = [];\n$input.all().forEach((mail, index) => {\n  for (const file of Object.values(mail.binary ?? {})) {\n    const name = String(file.fileName ?? '');\n    const mime = String(file.mimeType ?? '');\n    const isXml = /\\.xml$/i.test(name) || mime.includes('xml');\n    const isPdf = /\\.pdf$/i.test(name) || mime === 'application/pdf';\n    if (!isXml && !isPdf) continue;\n    out.push({\n      json: { from: mail.json.from, subject: mail.json.subject, fileName: name, isXml },\n      binary: { data: file },\n      pairedItem: { item: index },\n    });\n  }\n});\nreturn out;"
+      },
+      "id": "022ede88-b3c3-56ec-b151-b71cc3e6aab2",
+      "name": "One item per attachment",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "invowerk",
+        "operation": "parse_invoice",
+        "binaryPropertyName": "data"
+      },
+      "id": "f3451565-3e17-5a1d-a79b-5c6e9608c912",
+      "name": "Parse invoice",
+      "type": "@invowerk-dev/n8n-nodes-invowerk.invowerk",
+      "typeVersion": 1,
+      "position": [
+        80,
+        -100
+      ],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// One sheet row per attachment. A file that is not an e-invoice (a plain\n// PDF, say) gets a row too, with the reason in `status`.\nconst file = $('One item per attachment').item.json;\nconst base = { received_from: file.from, subject: file.subject, file: file.fileName };\nif ($json.error) {\n  return { json: { ...base, status: `not read: ${$json.error}` } };\n}\nconst m = $json.model ?? {};\nconst totals = m.totals ?? {};\nreturn {\n  json: {\n    ...base,\n    status: 'read',\n    invoice_number: m.invoice_number ?? '',\n    issue_date: m.issue_date ?? '',\n    due_date: m.due_date ?? '',\n    seller: m.seller?.name ?? '',\n    seller_vat_id: m.seller?.vat_id ?? '',\n    currency: m.currency ?? '',\n    net_total: totals.tax_exclusive ?? '',\n    gross_total: totals.tax_inclusive ?? '',\n    amount_due: totals.payable ?? totals.tax_inclusive ?? '',\n    payment_iban: m.payment_iban ?? '',\n    format: `${$json.detection?.flavor ?? ''} ${$json.detection?.syntax ?? ''}`.trim(),\n    source: $json.source ?? '',\n  },\n};"
+      },
+      "id": "69d28589-f5b7-54d8-ad33-7fbd784032db",
+      "name": "Shape sheet row",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "1d9c26f7-1830-556e-a5fa-222bbb7467bc",
+      "name": "Append to invoice log",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        640,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// The readable view is built from the XML. A ZUGFeRD / Factur-X PDF is\n// readable already, so only XML attachments go on.\nreturn $input.all().flatMap((item, index) =>\n  item.json.isXml ? [{ json: item.json, binary: item.binary, pairedItem: { item: index } }] : [],\n);"
+      },
+      "id": "10242be1-d67d-51d7-9300-1bf0c4247862",
+      "name": "Only XML invoices",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        80,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "invowerk",
+        "operation": "render_invoice",
+        "binaryPropertyName": "data",
+        "additionalFields": {
+          "lang": "de"
+        }
+      },
+      "id": "f30c7dd0-e9f4-52b3-afc2-570c33ff7702",
+      "name": "Render readable view",
+      "type": "@invowerk-dev/n8n-nodes-invowerk.invowerk",
+      "typeVersion": 1,
+      "position": [
+        360,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// The node returns the readable view as HTML text in `data`; make it a file.\nconst file = $('Only XML invoices').item.json;\nreturn {\n  json: { fileName: file.fileName, from: file.from, subject: file.subject },\n  binary: {\n    view: {\n      data: Buffer.from($json.data, 'utf8').toString('base64'),\n      mimeType: 'text/html',\n      fileName: `${file.fileName.replace(/\\.xml$/i, '')}.html`,\n      fileExtension: 'html',\n    },\n  },\n};"
+      },
+      "id": "4779c63d-78e8-590a-9d08-f4ea158622e4",
+      "name": "Attach as HTML file",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        340
+      ]
+    },
+    {
+      "parameters": {
+        "fromEmail": "invoices@example.com",
+        "toEmail": "bookkeeping@example.com",
+        "subject": "=Readable copy: {{ $json.fileName }}",
+        "emailFormat": "text",
+        "text": "=Invoice from {{ $json.from }}, subject \"{{ $json.subject }}\".\nThe readable view is attached.",
+        "options": {
+          "fileAttachments": "view",
+          "appendAttribution": false
+        }
+      },
+      "id": "0809bb46-41c1-5ce3-8c16-3dace6dd6f6f",
+      "name": "Send readable copy",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        920,
+        340
+      ]
+    }
+  ],
+  "connections": {
+    "New email with invoice": {
+      "main": [
+        [
+          {
+            "node": "One item per attachment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "One item per attachment": {
+      "main": [
+        [
+          {
+            "node": "Parse invoice",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Only XML invoices",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse invoice": {
+      "main": [
+        [
+          {
+            "node": "Shape sheet row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shape sheet row": {
+      "main": [
+        [
+          {
+            "node": "Append to invoice log",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Only XML invoices": {
+      "main": [
+        [
+          {
+            "node": "Render readable view",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render readable view": {
+      "main": [
+        [
+          {
+            "node": "Attach as HTML file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach as HTML file": {
+      "main": [
+        [
+          {
+            "node": "Send readable copy",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

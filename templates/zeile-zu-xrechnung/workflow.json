@@ -1,0 +1,239 @@
+{
+  "name": "Sheet row to XRechnung, sent by email (invowerk)",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## Sheet row to XRechnung by email\nEach new row in your invoice sheet becomes an XRechnung (UBL XML), checked against the EN 16931 and XRechnung rules by invowerk, and is emailed to the buyer as an attachment.\n\n### Setup\n1. Install the community node `@invowerk-dev/n8n-nodes-invowerk`.\n2. Get an API key: https://invowerk.dev/go/tpl-zeile-zu-xrechnung?to=/app/api-keys\n3. Create the sheet with these header columns: `invoice_number`, `issue_date`, `due_date`, `buyer_reference`, `buyer_name`, `buyer_city`, `buyer_post_code`, `buyer_country`, `buyer_email`, `item`, `quantity`, `unit_price`, `vat_rate`.\n4. Pick the sheet in **New invoice row**, edit `SELLER` in **Build invoice body**, connect Gmail.\n\nThe trigger carries one pinned sample row: run the workflow once (without the email step) to see the result.",
+        "height": 520,
+        "width": 460
+      },
+      "id": "89e3d44a-7cb5-57a1-803c-d56002345e49",
+      "name": "About this workflow",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### Your figures\nThe code computes quantity x price and the VAT for one line at one rate. invowerk does not recompute amounts: it writes them into the XML and rejects an invoice that breaks a rule. XRechnung needs a buyer reference (Leitweg-ID for public buyers).",
+        "height": 220,
+        "width": 300,
+        "color": 5
+      },
+      "id": "5cfecda3-ef9d-5a78-a223-b562cefd31f3",
+      "name": "Note: amounts",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -40,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "content": "### invowerk: Generate Invoice\nFlavor `xrechnung`, syntax `ubl`. invowerk checks the XML it built; an invoice that breaks a rule is never returned, the node fails instead.",
+        "height": 220,
+        "width": 300,
+        "color": 4
+      },
+      "id": "f009061c-dc90-5f8d-8aa4-f7392002321f",
+      "name": "Note: invowerk",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        300,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "event": "rowAdded",
+        "options": {}
+      },
+      "id": "71076ce0-2879-56b3-9431-198f30fc7e27",
+      "name": "New invoice row",
+      "type": "n8n-nodes-base.googleSheetsTrigger",
+      "typeVersion": 1,
+      "position": [
+        -480,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// One sheet row = one invoice with one line. Edit SELLER once: these are\n// your own company details, written into every invoice.\nconst SELLER = {\n  name: 'Seller GmbH',\n  address: { city: 'Berlin', post_code: '10115', country_code: 'DE' },\n  vat_id: 'DE123456789',\n  contact_name: 'Accounts',\n  contact_phone: '+49 30 1234567',\n  contact_email: 'accounts@example.com',\n  electronic_address: 'seller@example.com',\n};\nconst PAYMENT_IBAN = 'DE75512108001245126199';\n\n// Sheets in a German locale write 1.234,50. Accept both 1234.50 and 1.234,50.\nfunction num(value, column) {\n  let text = String(value ?? '').trim().replace(/\\s/g, '');\n  if (text.includes(',')) text = text.replace(/\\./g, '').replace(',', '.');\n  const n = Number(text);\n  if (text === '' || !Number.isFinite(n)) {\n    throw new Error(`Column \"${column}\" is not a number: \"${value}\"`);\n  }\n  return n;\n}\nconst cents = (n) => Math.round(n * 100);\nconst money = (c) => (c / 100).toFixed(2);\n\nconst row = $json;\nconst quantity = num(row.quantity, 'quantity');\nconst unitPrice = num(row.unit_price, 'unit_price');\nconst rate = num(row.vat_rate, 'vat_rate');\n\n// The amounts are computed HERE, by this template; invowerk writes them into\n// the XML as given and checks the result against the rules, it does not\n// recompute them. Check the figures before you send the first invoice.\nconst net = cents(quantity * unitPrice);\nconst tax = Math.round((net * rate) / 100);\n\nreturn {\n  json: {\n    invoice_number: String(row.invoice_number),\n    issue_date: String(row.issue_date),\n    due_date: row.due_date ? String(row.due_date) : '',\n    buyer_reference: String(row.buyer_reference ?? ''),\n    buyer_email: String(row.buyer_email),\n    payment_iban: PAYMENT_IBAN,\n    seller: SELLER,\n    buyer: {\n      name: String(row.buyer_name),\n      address: {\n        city: String(row.buyer_city),\n        post_code: String(row.buyer_post_code),\n        country_code: String(row.buyer_country || 'DE').toUpperCase(),\n      },\n      electronic_address: String(row.buyer_email),\n    },\n    lines: [\n      {\n        name: String(row.item),\n        net_price: unitPrice.toFixed(2),\n        quantity: String(quantity),\n        line_net_amount: money(net),\n        tax_category: 'S',\n        tax_rate: rate.toFixed(2),\n      },\n    ],\n    tax_breakdown: [\n      { taxable_amount: money(net), tax_amount: money(tax), category: 'S', rate: rate.toFixed(2) },\n    ],\n    totals: { line_total: money(net), tax_exclusive: money(net), tax_inclusive: money(net + tax) },\n  },\n};"
+      },
+      "id": "10d910aa-7be0-5912-bcc7-8049400b0250",
+      "name": "Build invoice body",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "invowerk",
+        "operation": "generate_invoice",
+        "invoiceNumber": "={{ $json.invoice_number }}",
+        "issueDate": "={{ $json.issue_date }}",
+        "seller": "={{ JSON.stringify($json.seller) }}",
+        "buyer": "={{ JSON.stringify($json.buyer) }}",
+        "lines": "={{ JSON.stringify($json.lines) }}",
+        "taxBreakdown": "={{ JSON.stringify($json.tax_breakdown) }}",
+        "totals": "={{ JSON.stringify($json.totals) }}",
+        "additionalFields": {
+          "flavor": "xrechnung",
+          "syntax": "ubl",
+          "buyerReference": "={{ $json.buyer_reference }}",
+          "dueDate": "={{ $json.due_date }}",
+          "paymentIban": "={{ $json.payment_iban }}",
+          "currency": "EUR"
+        }
+      },
+      "id": "8486c3c4-017f-50f0-86a5-6030bc1d4a1e",
+      "name": "Generate XRechnung",
+      "type": "@invowerk-dev/n8n-nodes-invowerk.invowerk",
+      "typeVersion": 1,
+      "position": [
+        80,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// The node returns the XRechnung as text in `data`; turn it into an XML file.\nconst invoice = $('Build invoice body').item.json;\nreturn {\n  json: { invoice_number: invoice.invoice_number, buyer_email: invoice.buyer_email },\n  binary: {\n    invoice: {\n      data: Buffer.from($json.data, 'utf8').toString('base64'),\n      mimeType: 'application/xml',\n      fileName: `${invoice.invoice_number}.xml`,\n      fileExtension: 'xml',\n    },\n  },\n};"
+      },
+      "id": "8fb4cad0-12b8-5e6f-8885-6418ea8bffbf",
+      "name": "Attach as XML file",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        360,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "send",
+        "sendTo": "={{ $json.buyer_email }}",
+        "subject": "=Invoice {{ $json.invoice_number }}",
+        "emailType": "text",
+        "message": "=Hello,\n\nplease find attached invoice {{ $json.invoice_number }} as an XRechnung (XML).\n\nKind regards",
+        "options": {
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {
+                "property": "invoice"
+              }
+            ]
+          },
+          "appendAttribution": false
+        }
+      },
+      "id": "bb70f079-982f-564d-8cb5-41530430b858",
+      "name": "Email the invoice",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        0
+      ]
+    }
+  ],
+  "connections": {
+    "New invoice row": {
+      "main": [
+        [
+          {
+            "node": "Build invoice body",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build invoice body": {
+      "main": [
+        [
+          {
+            "node": "Generate XRechnung",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate XRechnung": {
+      "main": [
+        [
+          {
+            "node": "Attach as XML file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach as XML file": {
+      "main": [
+        [
+          {
+            "node": "Email the invoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {
+    "New invoice row": [
+      {
+        "json": {
+          "row_number": 2,
+          "invoice_number": "INV-001",
+          "issue_date": "2026-01-15",
+          "due_date": "2026-02-15",
+          "buyer_reference": "04011000-1234512345-06",
+          "buyer_name": "Buyer AG",
+          "buyer_city": "Munich",
+          "buyer_post_code": "80331",
+          "buyer_country": "DE",
+          "buyer_email": "buyer@example.com",
+          "item": "Widget",
+          "quantity": "1",
+          "unit_price": "100.00",
+          "vat_rate": "19"
+        }
+      }
+    ]
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

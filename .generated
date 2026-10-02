@@ -81,6 +81,12 @@ openapi.json
 openapi.sdk.json
 python/README.md
 python/config.yml
+templates/e-rechnung-ci-pruefen/README.md
+templates/e-rechnung-ci-pruefen/validate-e-invoices.yml
+templates/eingehende-e-rechnung-lesbar/README.md
+templates/eingehende-e-rechnung-lesbar/workflow.json
+templates/zeile-zu-xrechnung/README.md
+templates/zeile-zu-xrechnung/workflow.json
 typescript/README.md
 typescript/openapi-ts.config.ts
 typescript/package.json

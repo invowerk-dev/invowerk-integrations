@@ -17,6 +17,16 @@ Official integrations for the [invowerk API](https://invowerk.dev), generated fr
 - **TypeScript SDK** — `npm install @invowerk-dev/sdk` · [npm](https://www.npmjs.com/package/@invowerk-dev/sdk)
 - **GitHub Action** — [`invowerk-dev/invowerk-action`](https://github.com/marketplace/actions/invowerk-api) on the GitHub Marketplace
 
+## Templates
+
+Ready-made automations on the API: the walkthrough on the site, the files in this repository.
+
+| Template | Platform | Walkthrough | Files |
+|---|---|---|---|
+| Sheet row to XRechnung, sent by email | n8n | [invowerk.dev/templates/zeile-zu-xrechnung](https://invowerk.dev/templates/zeile-zu-xrechnung) | [templates/zeile-zu-xrechnung](templates/zeile-zu-xrechnung) |
+| Incoming e-invoice: data row and readable copy | n8n | [invowerk.dev/templates/eingehende-e-rechnung-lesbar](https://invowerk.dev/templates/eingehende-e-rechnung-lesbar) | [templates/eingehende-e-rechnung-lesbar](templates/eingehende-e-rechnung-lesbar) |
+| Validate e-invoices in CI with GitHub Actions | GitHub Actions | [invowerk.dev/templates/e-rechnung-ci-pruefen](https://invowerk.dev/templates/e-rechnung-ci-pruefen) | [templates/e-rechnung-ci-pruefen](templates/e-rechnung-ci-pruefen) |
+
 ## Operations
 
 | Operation | Endpoint | What it does |
