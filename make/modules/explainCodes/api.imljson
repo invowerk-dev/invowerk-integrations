@@ -1,0 +1,12 @@
+{
+  "url": "/v1/explain",
+  "method": "GET",
+  "qs": {
+    "code": "{{parameters.code}}",
+    "lang": "{{ifempty(parameters.lang, undefined)}}"
+  },
+  "response": {
+    "type": "json",
+    "output": "{{body}}"
+  }
+}

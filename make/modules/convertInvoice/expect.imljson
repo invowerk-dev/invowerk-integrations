@@ -1,0 +1,58 @@
+[
+  {
+    "name": "target_syntax",
+    "label": "Target syntax",
+    "required": true,
+    "type": "select",
+    "options": [
+      {
+        "label": "cii",
+        "value": "cii"
+      },
+      {
+        "label": "ubl",
+        "value": "ubl"
+      }
+    ],
+    "help": "The XML syntax to convert to: 'cii' or 'ubl'."
+  },
+  {
+    "name": "target_flavor",
+    "label": "Target flavor",
+    "required": false,
+    "type": "select",
+    "options": [
+      {
+        "label": "en16931",
+        "value": "en16931"
+      },
+      {
+        "label": "xrechnung",
+        "value": "xrechnung"
+      }
+    ],
+    "help": "Optional rule set of the result: 'en16931' or 'xrechnung'. Without it the flavor of the source is kept."
+  },
+  {
+    "name": "format",
+    "label": "Format",
+    "required": false,
+    "type": "text",
+    "help": "'json' returns {xml, syntax, flavor, self_validation}; omitted returns raw application/xml."
+  },
+  {
+    "name": "file_name",
+    "type": "filename",
+    "label": "File name",
+    "required": true,
+    "semantic": "file:name"
+  },
+  {
+    "name": "file_data",
+    "type": "buffer",
+    "label": "File data",
+    "required": true,
+    "semantic": "file:data",
+    "help": "The invoice file (XML or PDF)."
+  }
+]

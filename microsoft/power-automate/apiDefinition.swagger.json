@@ -1,0 +1,1445 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "invowerk",
+    "description": "German e-invoice checker: ZUGFeRD/Factur-X PDFs incl. PDF/A, XRechnung via the KoSIT validator, Peppol BIS. Free web tool, API, MCP.",
+    "version": "1.0.1",
+    "contact": {
+      "name": "invowerk support",
+      "url": "https://invowerk.dev/support",
+      "email": "support@invowerk.dev"
+    }
+  },
+  "host": "api.invowerk.dev",
+  "basePath": "/",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/v1/me": {
+      "get": {
+        "operationId": "GetMe",
+        "summary": "Your plan remaining requests and remaining credits",
+        "description": "Check where you stand before a call fails.\n\nReturns the plan this request runs on and whether your key was recognized.\nWithout an `X-API-Key`, the call runs anonymously at the rate limit for\ncalls without a key. It also returns the requests left in the current window\nand the features your plan includes. On plans priced in credits, it returns\nthe credits left in the current billing period.\n\nThis call does not count against your rate limit, so the numbers it reports\nare the numbers you have.\n\n**Credits:** free. This endpoint is not metered.",
+        "x-ms-visibility": "advanced",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Successful Response.",
+            "schema": {
+              "$ref": "#/definitions/MeResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/parse": {
+      "post": {
+        "operationId": "ParseInvoice",
+        "summary": "Read an e invoice into JSON",
+        "description": "Read an existing e-invoice into JSON keyed on EN 16931 Business Terms.\n\nThe JSON in `model` is the request body of `POST /v1/generate`, so you can edit\nit and create the invoice again. Send an XML invoice (UBL or CII) or a\nZUGFeRD / Factur-X PDF as the raw request body or as a multipart file part, at\nmost 20 MB. A PDF may have at most 500 pages and 16 attachments. UBL credit\nnotes are not supported. The answer also has `detection` (syntax, flavor,\nCustomizationID) and `source` (`xml` or `pdf-embedded`). A file that cannot be\nread returns 422; `detail` starts with an error code. More than 100,000 XML\nelements return 413; 429 means every slot is busy (callers without an API key\nshare one), 504 that reading took longer than 20 s. Costs 2 credits.\n\n**Credits:** 2 per call.",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "file",
+            "in": "formData",
+            "required": true,
+            "type": "file",
+            "x-ms-summary": "File",
+            "description": "The invoice file (XML or PDF).",
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response.",
+            "schema": {
+              "$ref": "#/definitions/ParseResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/convert": {
+      "post": {
+        "operationId": "ConvertInvoice",
+        "summary": "Convert an e invoice between UBL and CII",
+        "description": "Convert an e-invoice between UBL and CII.\n\nSend the invoice as for `POST /v1/parse`: XML or a ZUGFeRD / Factur-X PDF, raw\nbody or multipart file part, at most 20 MB. `target_syntax` is required (`ubl`\nor `cii`). `target_flavor` (`en16931` or `xrechnung`) is optional; without it\nthe flavor of the source is kept. invowerk checks the converted XML before\nanswering and never returns an invalid document. The answer is\n`application/xml`; `?format=json` returns `{xml, syntax, flavor,\nself_validation}`. Errors: 422 when the input cannot be read, with an error code\nat the start of `detail`; 500 when the converted XML fails the check (the\ncredits are refunded); 413, 429 and 504 as for `POST /v1/parse`. Costs 3\ncredits.\n\n**Credits:** 3 per call.",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "target_syntax",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "enum": [
+              "cii",
+              "ubl"
+            ],
+            "x-ms-summary": "Target syntax",
+            "description": "The XML syntax to convert to: 'cii' or 'ubl'.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "target_flavor",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "en16931",
+              "xrechnung"
+            ],
+            "x-ms-summary": "Target flavor",
+            "description": "Optional rule set of the result: 'en16931' or 'xrechnung'. Without it the flavor of the source is kept."
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "default": "json",
+            "enum": [
+              "json"
+            ],
+            "x-ms-visibility": "internal",
+            "x-ms-summary": "Format",
+            "description": "Answer as JSON."
+          },
+          {
+            "name": "file",
+            "in": "formData",
+            "required": true,
+            "type": "file",
+            "x-ms-summary": "File",
+            "description": "The invoice file (XML or PDF).",
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The converted XML (default) or the JSON object (?format=json).",
+            "schema": {
+              "$ref": "#/definitions/ConvertResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/generate": {
+      "post": {
+        "operationId": "GenerateInvoice",
+        "summary": "Create an e invoice from JSON",
+        "description": "Create an EN 16931 e-invoice from JSON.\n\nThe JSON body is keyed on EN 16931 Business Terms (BT-*). `syntax` selects UBL\n(default) or CII. `flavor` selects plain EN 16931 (default) or XRechnung, which\nrequires `buyer_reference` (BT-10, the Leitweg-ID). invowerk writes your\namounts as given. It does not compute or correct them. Before answering,\ninvowerk checks the generated XML and never returns an invalid document. The\nanswer is `application/xml`; `?format=json` returns\n`{xml, syntax, flavor, self_validation}`. Errors: 422 for invalid input, with\ndetails per field; 500 when the generated XML fails the check (the credits are\nrefunded); 429 when every slot is busy (callers without an API key share\none); 504 when it took longer than 20 s. Costs 5 credits.\n\n**Credits:** 5 per call.",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "default": "json",
+            "enum": [
+              "json"
+            ],
+            "x-ms-visibility": "internal",
+            "x-ms-summary": "Format",
+            "description": "Answer as JSON."
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/GenerateRequest"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The generated XML (default) or the JSON object (?format=json).",
+            "schema": {
+              "$ref": "#/definitions/GenerateResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/explain": {
+      "get": {
+        "operationId": "ExplainCodes",
+        "summary": "Explain an error code",
+        "description": "Explain rule codes and invowerk's own `IW-*` Hinweise in German or English.\n\nFor each code the answer has the title, what the rule requires, common causes,\nhow to fix the invoice, the affected Business Terms and `explain_url`, the path\nof the German page under `/codes/`. The codes appear in `findings` and `hints`\nof `POST /v1/validate`. If any code has no explanation, the answer is HTTP 404\nand names those codes. Costs 0 credits; an API key is not needed and does not\nraise the rate limit.\n\n**Credits:** free. This endpoint is not metered.",
+        "x-ms-visibility": "important",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi",
+            "x-ms-summary": "Code",
+            "description": "One or more codes; repeat the parameter: ?code=BR-DE-21&code=IW-IBAN.",
+            "x-ms-visibility": "important"
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Lang",
+            "description": "Language of the explanation, `de` or `en`. Without it, the Accept-Language header decides, otherwise German."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response.",
+            "schema": {
+              "$ref": "#/definitions/ExplainResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/render": {
+      "post": {
+        "operationId": "RenderInvoice",
+        "summary": "Render an e invoice as HTML",
+        "description": "Render an XML e-invoice as a readable HTML page.\n\nSend an XML invoice (UBL or CII, e.g. XRechnung) as the raw request body or as\na multipart `file` part. PDFs are not accepted. invowerk renders it with the\nKoSIT XRechnung visualization and answers with `text/html`; `?format=json`\nreturns `{html, lang, flavor, syntax}` instead. `lang` sets the label language\n(`de` or `en`; otherwise `Accept-Language`, then `de`). Errors: 400 for an\nempty body, 415 for a file that is not an XML invoice, 422 for malformed XML or\na DOCTYPE, 413 for more than 100,000 elements, 429 when every render slot is\nbusy (callers without an API key share one), 504 when the render ran longer\nthan 20 s. Costs 1 credit.\n\n**Credits:** 1 per call.",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "x-ms-summary": "Lang",
+            "description": "Label language, 'de' or 'en'. Default: Accept-Language, then 'de'."
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "required": true,
+            "type": "string",
+            "default": "json",
+            "enum": [
+              "json"
+            ],
+            "x-ms-visibility": "internal",
+            "x-ms-summary": "Format",
+            "description": "Answer as JSON."
+          },
+          {
+            "name": "file",
+            "in": "formData",
+            "required": false,
+            "type": "file",
+            "x-ms-summary": "File",
+            "description": "The invoice XML as a multipart file part."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The rendered HTML (default) or the JSON object (?format=json).",
+            "schema": {
+              "$ref": "#/definitions/RenderResponse"
+            }
+          }
+        }
+      }
+    },
+    "/v1/validate": {
+      "post": {
+        "operationId": "ValidateInvoice",
+        "summary": "Check an e invoice",
+        "description": "Check an e-invoice against EN 16931 and the German rules.\n\nSend an XML invoice (UBL or CII, e.g. XRechnung) or a ZUGFeRD / Factur-X PDF as\nthe raw request body or as a multipart file part, at most 20 MB. A PDF may have\nat most 500 pages and 16 attachments. invowerk detects the format from the\nbytes, not from the Content-Type. A larger body gets HTTP 413. Otherwise the\nanswer is always HTTP 200, because a failed check is a result, not an error.\n`valid` is the result, `findings` lists each problem, `e_rechnung_de` maps the\nresult onto the BMF categories and `evidence` identifies the checked file.\n`hints` are extra observations that never change `valid`. For XRechnung the\nKoSIT validator decides `valid`. If it is unreachable, invowerk's own check\nwith the same rules decides, `verdict_source` is `local` and the\n`X-EInvoice-Degraded` header is set (`official-lane-unavailable`;\n`pdfa-lane-unavailable` when the PDF/A check did not answer; comma-separated).\n`disagreement` is true when both checks ran and differ. For a PDF,\n`pdfa_verdict` is the PDF/A check with veraPDF. `?explain=true` adds the\nexplanation for rules that have one, in `lang` (`de` or `en`). An XML file\nwith more than 100,000 elements gets HTTP 413. HTTP 429 means every check\nslot is busy (callers without an API key share one), HTTP 504 that the check\nran longer than 20 s. Costs 1 credit.\n\n**Credits:** 1 per call.",
+        "x-ms-visibility": "important",
+        "consumes": [
+          "multipart/form-data"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "name": "explain",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "default": false,
+            "x-ms-summary": "Explain",
+            "description": "Explain."
+          },
+          {
+            "name": "lang",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": "de",
+            "x-ms-summary": "Lang",
+            "description": "Lang."
+          },
+          {
+            "name": "file",
+            "in": "formData",
+            "required": true,
+            "type": "file",
+            "x-ms-summary": "File",
+            "description": "The invoice file (XML or PDF).",
+            "x-ms-visibility": "important"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response.",
+            "schema": {
+              "$ref": "#/definitions/ValidationResponse"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Buyer": {
+      "type": "object",
+      "description": "The buyer (BG-7).",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Buyer name (BT-44).",
+          "x-ms-summary": "Name"
+        },
+        "address": {
+          "$ref": "#/definitions/PostalAddress"
+        },
+        "electronic_address": {
+          "type": "string",
+          "description": "Buyer electronic address (BT-49).",
+          "x-ms-summary": "Electronic Address"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ]
+    },
+    "ContentClass": {
+      "type": "object",
+      "description": "Reminder that the content of an invoice cannot be checked by machine.\n\nIt never contains findings. A clean result means the invoice is well-formed\nand follows the rules. It does not mean that prices, amounts or the\ndelivered service are correct.",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "Always 'not_machine_checkable'.",
+          "default": "not_machine_checkable",
+          "x-ms-summary": "Status"
+        },
+        "note": {
+          "type": "string",
+          "description": "Fixed note: a format check cannot judge whether the content is correct.",
+          "x-ms-summary": "Note"
+        }
+      },
+      "required": [
+        "note"
+      ]
+    },
+    "ConvertResponse": {
+      "type": "object",
+      "description": "The answer of POST /v1/convert?format=json: the XML and the check result.",
+      "properties": {
+        "xml": {
+          "type": "string",
+          "description": "The converted e-invoice as XML.",
+          "x-ms-summary": "Xml"
+        },
+        "syntax": {
+          "type": "string",
+          "description": "The syntax of the XML: 'ubl' or 'cii'.",
+          "x-ms-summary": "Syntax"
+        },
+        "flavor": {
+          "type": "string",
+          "description": "The rule set of the XML: 'en16931' or 'xrechnung'.",
+          "x-ms-summary": "Flavor"
+        },
+        "self_validation": {
+          "$ref": "#/definitions/ConvertSelfValidation"
+        }
+      },
+      "required": [
+        "xml",
+        "syntax",
+        "flavor",
+        "self_validation"
+      ]
+    },
+    "ConvertSelfValidation": {
+      "type": "object",
+      "description": "The result of invowerk's own check of the converted XML.\n\nIt shows that the XML passed the check before it was returned. An invalid\nresult returns HTTP 500 instead.",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "description": "Always true. An invalid result returns HTTP 500 instead.",
+          "x-ms-summary": "Valid"
+        },
+        "finding_count": {
+          "type": "integer",
+          "description": "Number of findings of the check; all of them are non-fatal.",
+          "x-ms-summary": "Finding Count"
+        }
+      },
+      "required": [
+        "valid",
+        "finding_count"
+      ]
+    },
+    "CreditsInfo": {
+      "type": "object",
+      "description": "Your credit balance for the current billing period. `granted` is what\nyour plan included, `balance` what is still unspent, and `period_end` the\ndate (ISO 8601) your allowance refills. Present only on plans that are\npriced in credits.",
+      "properties": {
+        "balance": {
+          "type": "integer",
+          "x-ms-summary": "Balance"
+        },
+        "granted": {
+          "type": "integer",
+          "x-ms-summary": "Granted"
+        },
+        "period_end": {
+          "type": "string",
+          "x-ms-summary": "Period End"
+        }
+      },
+      "required": [
+        "balance",
+        "granted"
+      ]
+    },
+    "DocumentTotals": {
+      "type": "object",
+      "description": "The document totals (BG-22).",
+      "properties": {
+        "line_total": {
+          "type": "string",
+          "description": "Sum of the line net amounts (BT-106).",
+          "x-ms-summary": "Line Total"
+        },
+        "tax_exclusive": {
+          "type": "string",
+          "description": "Invoice total without VAT (BT-109).",
+          "x-ms-summary": "Tax Exclusive"
+        },
+        "tax_inclusive": {
+          "type": "string",
+          "description": "Invoice total with VAT (BT-112).",
+          "x-ms-summary": "Tax Inclusive"
+        },
+        "payable": {
+          "type": "string",
+          "description": "Amount due for payment (BT-115). Defaults to the total with VAT.",
+          "x-ms-summary": "Payable"
+        }
+      },
+      "required": [
+        "line_total",
+        "tax_exclusive",
+        "tax_inclusive"
+      ]
+    },
+    "ERechnungDe": {
+      "type": "object",
+      "description": "The result mapped onto the categories of the BMF letter of 15.10.2025\n(Germany).\n\nIt describes the format check only. It is not a tax assessment (see\n``note``).",
+      "properties": {
+        "status": {
+          "type": "string",
+          "description": "'e_rechnung' (no errors), 'e_rechnung_mit_fehlern' (rule errors), 'keine_e_rechnung' (not a structured e-invoice) or 'nicht_pruefbar' (the file could not be checked).",
+          "x-ms-summary": "Status"
+        },
+        "reason": {
+          "type": "string",
+          "description": "Why this status applies, in German, naming the finding.",
+          "x-ms-summary": "Reason"
+        },
+        "basis": {
+          "type": "string",
+          "description": "The BMF letter or UStAE passage for the category; null for 'nicht_pruefbar'.",
+          "x-ms-summary": "Basis"
+        },
+        "note": {
+          "type": "string",
+          "description": "Fixed German note, the same on every answer: invowerk checks the technical format, not whether content and amounts are correct or what tax consequences an error has.",
+          "x-ms-summary": "Note"
+        }
+      },
+      "required": [
+        "status",
+        "reason",
+        "note"
+      ]
+    },
+    "ErrorClasses": {
+      "type": "object",
+      "description": "The findings grouped by where the problem is. ``findings`` has the same\nfindings as one list.",
+      "properties": {
+        "format": {
+          "type": "array",
+          "description": "Problems with the file or XML structure: unknown format, malformed XML, a forbidden DOCTYPE, XML schema (XSD) errors.",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          },
+          "x-ms-summary": "Format"
+        },
+        "business_rules": {
+          "type": "array",
+          "description": "Failed rules of the applied rule set (EN 16931, XRechnung, ZUGFeRD / Factur-X or Peppol BIS).",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          },
+          "x-ms-summary": "Business Rules"
+        },
+        "carrier": {
+          "type": "array",
+          "description": "Problems with the PDF of a ZUGFeRD / Factur-X invoice: PDF/A conformance and how the XML is embedded (BR-HYBRID-* rules). Always empty for an XML file.",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          },
+          "x-ms-summary": "Carrier"
+        },
+        "content": {
+          "$ref": "#/definitions/ContentClass"
+        }
+      },
+      "required": [
+        "content"
+      ]
+    },
+    "Evidence": {
+      "type": "object",
+      "description": "Which file was checked, when, and with which software. Keep it with a\nsaved report: the SHA-256 ties the report to one file.",
+      "properties": {
+        "document_sha256": {
+          "type": "string",
+          "description": "Hex SHA-256 of the exact bytes you sent (compare with `sha256sum <file>`).",
+          "x-ms-summary": "Document Sha256"
+        },
+        "document_bytes": {
+          "type": "integer",
+          "description": "Size in bytes of what you sent.",
+          "x-ms-summary": "Document Bytes"
+        },
+        "checked_at": {
+          "type": "string",
+          "description": "UTC time of the check, ISO 8601 to the second, e.g. '2026-09-24T10:15:00Z'.",
+          "x-ms-summary": "Checked At"
+        },
+        "validator": {
+          "$ref": "#/definitions/ValidatorVersions"
+        }
+      },
+      "required": [
+        "document_sha256",
+        "document_bytes",
+        "checked_at",
+        "validator"
+      ]
+    },
+    "ExplainResponse": {
+      "type": "object",
+      "description": "The answer of GET /v1/explain: one explanation per requested code.\n\nPass several codes with repeated ``?code=`` parameters. If any code is\nunknown, the call returns HTTP 404 and names it; there is no partial\nanswer.",
+      "properties": {
+        "lang": {
+          "type": "string",
+          "description": "Language of all explanations: 'de' or 'en'.",
+          "x-ms-summary": "Lang"
+        },
+        "explanations": {
+          "type": "array",
+          "description": "One explanation per requested code, in request order, duplicates removed.",
+          "items": {
+            "$ref": "#/definitions/RuleExplanation"
+          },
+          "x-ms-summary": "Explanations"
+        }
+      },
+      "required": [
+        "lang",
+        "explanations"
+      ]
+    },
+    "Finding": {
+      "type": "object",
+      "description": "One problem found in the invoice.\n\n``error_class`` says where the problem is: in the file or XML structure\n(``format``), in a rule of the applied rule set (``business_rules``) or in\nthe PDF around the invoice data (``carrier``). ``explain_url`` links the\nGerman explanation page for the code. ``explain`` holds the explanation\nitself when you call with ``?explain=true``.",
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "description": "Code of the rule that failed, e.g. 'BR-DE-21', or 'XSD' for a schema error.",
+          "x-ms-summary": "Rule Id"
+        },
+        "error_class": {
+          "type": "string",
+          "description": "Where the problem is: 'format' (file or XML structure), 'business_rules' (a rule of the applied rule set) or 'carrier' (the PDF around the XML).",
+          "x-ms-summary": "Error Class"
+        },
+        "severity": {
+          "type": "string",
+          "description": "'fatal' (the invoice fails the check), 'warning' or 'information'.",
+          "x-ms-summary": "Severity"
+        },
+        "xpath": {
+          "type": "string",
+          "description": "Where the problem is in the XML (an XPath or a schema line), if known.",
+          "x-ms-summary": "Xpath"
+        },
+        "message": {
+          "type": "string",
+          "description": "The message of the failed rule or check.",
+          "x-ms-summary": "Message"
+        },
+        "explain_url": {
+          "type": "string",
+          "description": "Path of the German explanation page /codes/<CODE>, if invowerk has one.",
+          "x-ms-summary": "Explain Url"
+        },
+        "explain": {
+          "type": "object",
+          "description": "Explanation of the rule (meaning, causes, fixes) in the requested language. Set only with ?explain=true and if invowerk has an entry for the code.",
+          "additionalProperties": true,
+          "x-ms-summary": "Explain"
+        }
+      },
+      "required": [
+        "rule_id",
+        "error_class",
+        "severity",
+        "message"
+      ]
+    },
+    "Flavor": {
+      "type": "string",
+      "description": "The rule set the invoice follows: plain EN 16931, or XRechnung (German rules).",
+      "enum": [
+        "en16931",
+        "xrechnung"
+      ]
+    },
+    "GenerateRequest": {
+      "type": "object",
+      "description": "The request body of POST /v1/generate: an EN 16931 invoice, keyed on\nBusiness Terms (BT-*).\n\nAll amounts are your own figures. invowerk writes them into the XML and\nchecks the result against EN 16931 (and XRechnung, if selected). It does not\ncompute or correct them.",
+      "example": {
+        "buyer": {
+          "address": {
+            "city": "Munich",
+            "country_code": "DE",
+            "post_code": "80331"
+          },
+          "electronic_address": "buyer@example.com",
+          "name": "Buyer AG"
+        },
+        "buyer_reference": "04011000-1234512345-06",
+        "currency": "EUR",
+        "due_date": "2026-02-15",
+        "flavor": "xrechnung",
+        "invoice_number": "INV-001",
+        "issue_date": "2026-01-15",
+        "lines": [
+          {
+            "line_net_amount": "100.00",
+            "name": "Widget",
+            "net_price": "100.00",
+            "quantity": "1",
+            "tax_category": "S",
+            "tax_rate": "19.00"
+          }
+        ],
+        "payment_iban": "DE75512108001245126199",
+        "seller": {
+          "address": {
+            "city": "Berlin",
+            "country_code": "DE",
+            "post_code": "10115"
+          },
+          "contact_email": "accounts@example.com",
+          "contact_name": "Accounts",
+          "contact_phone": "+49 30 1234567",
+          "electronic_address": "seller@example.com",
+          "name": "Seller GmbH",
+          "vat_id": "DE123456789"
+        },
+        "syntax": "ubl",
+        "tax_breakdown": [
+          {
+            "category": "S",
+            "rate": "19.00",
+            "tax_amount": "19.00",
+            "taxable_amount": "100.00"
+          }
+        ],
+        "totals": {
+          "line_total": "100.00",
+          "tax_exclusive": "100.00",
+          "tax_inclusive": "119.00"
+        }
+      },
+      "properties": {
+        "syntax": {
+          "$ref": "#/definitions/Syntax"
+        },
+        "flavor": {
+          "$ref": "#/definitions/Flavor"
+        },
+        "invoice_number": {
+          "type": "string",
+          "description": "Invoice number (BT-1).",
+          "x-ms-summary": "Invoice Number"
+        },
+        "issue_date": {
+          "type": "string",
+          "description": "Issue date, 'YYYY-MM-DD' (BT-2).",
+          "x-ms-summary": "Issue Date"
+        },
+        "currency": {
+          "type": "string",
+          "description": "Currency code, ISO 4217, e.g. 'EUR' (BT-5).",
+          "default": "EUR",
+          "maxLength": 3,
+          "minLength": 3,
+          "x-ms-summary": "Currency"
+        },
+        "invoice_type_code": {
+          "type": "string",
+          "description": "Invoice type code from UNTDID 1001; '380' is a commercial invoice (BT-3).",
+          "default": "380",
+          "x-ms-summary": "Invoice Type Code"
+        },
+        "buyer_reference": {
+          "type": "string",
+          "description": "Buyer reference, in Germany often the Leitweg-ID (BT-10). Required for flavor 'xrechnung' (BR-DE-15), optional for plain EN 16931.",
+          "x-ms-summary": "Buyer Reference"
+        },
+        "due_date": {
+          "type": "string",
+          "description": "Payment due date, 'YYYY-MM-DD' (BT-9).",
+          "x-ms-summary": "Due Date"
+        },
+        "payment_iban": {
+          "type": "string",
+          "description": "IBAN of the payee account for a bank transfer (BT-84).",
+          "x-ms-summary": "Payment Iban"
+        },
+        "seller": {
+          "$ref": "#/definitions/Seller"
+        },
+        "buyer": {
+          "$ref": "#/definitions/Buyer"
+        },
+        "lines": {
+          "type": "array",
+          "description": "One or more invoice lines (BG-25).",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/InvoiceLine"
+          },
+          "x-ms-summary": "Lines"
+        },
+        "tax_breakdown": {
+          "type": "array",
+          "description": "One or more VAT breakdowns, one per VAT category and rate (BG-23).",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/definitions/TaxBreakdown"
+          },
+          "x-ms-summary": "Tax Breakdown"
+        },
+        "totals": {
+          "$ref": "#/definitions/DocumentTotals"
+        }
+      },
+      "required": [
+        "invoice_number",
+        "issue_date",
+        "seller",
+        "buyer",
+        "lines",
+        "tax_breakdown",
+        "totals"
+      ],
+      "additionalProperties": false
+    },
+    "GenerateResponse": {
+      "type": "object",
+      "description": "The answer of POST /v1/generate?format=json: the XML and the check result.",
+      "properties": {
+        "xml": {
+          "type": "string",
+          "description": "The generated e-invoice as XML.",
+          "x-ms-summary": "Xml"
+        },
+        "syntax": {
+          "type": "string",
+          "description": "The syntax of the XML: 'ubl' or 'cii'.",
+          "x-ms-summary": "Syntax"
+        },
+        "flavor": {
+          "type": "string",
+          "description": "The rule set of the XML: 'en16931' or 'xrechnung'.",
+          "x-ms-summary": "Flavor"
+        },
+        "self_validation": {
+          "$ref": "#/definitions/SelfValidation"
+        }
+      },
+      "required": [
+        "xml",
+        "syntax",
+        "flavor",
+        "self_validation"
+      ]
+    },
+    "HintInfo": {
+      "type": "object",
+      "description": "One hint: an extra observation by invowerk. Hints never change the result.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "The hint code, e.g. 'IW-IBAN'.",
+          "x-ms-summary": "Code"
+        },
+        "severity": {
+          "type": "string",
+          "description": "'warning' or 'information'. A hint is never fatal.",
+          "x-ms-summary": "Severity"
+        },
+        "message": {
+          "type": "string",
+          "description": "The observation, in the requested language.",
+          "x-ms-summary": "Message"
+        },
+        "bt_refs": {
+          "type": "array",
+          "description": "The EN 16931 Business Terms the hint is about.",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Bt Refs"
+        },
+        "explain_url": {
+          "type": "string",
+          "description": "Path of the German page /codes/<CODE> that explains the hint.",
+          "x-ms-summary": "Explain Url"
+        }
+      },
+      "required": [
+        "code",
+        "severity",
+        "message"
+      ]
+    },
+    "InvoiceLine": {
+      "type": "object",
+      "description": "One invoice line (BG-25).",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Item name (BT-153).",
+          "x-ms-summary": "Name"
+        },
+        "net_price": {
+          "type": "string",
+          "description": "Net price per unit (BT-146).",
+          "x-ms-summary": "Net Price"
+        },
+        "quantity": {
+          "type": "string",
+          "description": "Invoiced quantity (BT-129).",
+          "x-ms-summary": "Quantity"
+        },
+        "unit_code": {
+          "type": "string",
+          "description": "Unit code from UN/ECE Recommendation 20; 'C62' means 'one' (BT-130).",
+          "default": "C62",
+          "x-ms-summary": "Unit Code"
+        },
+        "line_net_amount": {
+          "type": "string",
+          "description": "Line net amount, quantity × net price, as you state it (BT-131).",
+          "x-ms-summary": "Line Net Amount"
+        },
+        "tax_category": {
+          "type": "string",
+          "description": "VAT category code of the line, e.g. 'S' for standard rate (BT-151).",
+          "default": "S",
+          "x-ms-summary": "Tax Category"
+        },
+        "tax_rate": {
+          "type": "string",
+          "description": "VAT rate of the line in percent, e.g. 19.00 (BT-152).",
+          "default": "19.00",
+          "x-ms-summary": "Tax Rate"
+        }
+      },
+      "required": [
+        "name",
+        "net_price",
+        "quantity",
+        "line_net_amount"
+      ]
+    },
+    "MeResponse": {
+      "type": "object",
+      "description": "The `GET /v1/me` payload: who the request is authenticated as, what is\nleft of your request and credit allowances, and which features your plan\nincludes.",
+      "properties": {
+        "tier": {
+          "type": "string",
+          "description": "The plan this request is served on.",
+          "x-ms-summary": "Tier"
+        },
+        "is_keyed": {
+          "type": "boolean",
+          "description": "Whether the request carried a valid API key. Without an `X-API-Key`, the call runs anonymously at the rate limit for calls without a key.",
+          "x-ms-summary": "Is Keyed"
+        },
+        "rate_limit": {
+          "$ref": "#/definitions/RateLimitInfo"
+        },
+        "credits": {
+          "$ref": "#/definitions/CreditsInfo"
+        },
+        "features": {
+          "type": "array",
+          "description": "The features your plan includes.",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Features"
+        }
+      },
+      "required": [
+        "tier",
+        "is_keyed",
+        "rate_limit",
+        "features"
+      ]
+    },
+    "ParseDetection": {
+      "type": "object",
+      "description": "What invowerk detected about the source document, from its bytes.",
+      "properties": {
+        "syntax": {
+          "type": "string",
+          "description": "Syntax of the source document: 'ubl' or 'cii'.",
+          "x-ms-summary": "Syntax"
+        },
+        "flavor": {
+          "type": "string",
+          "description": "Rule set of the source, read from its CustomizationID: 'xrechnung', 'peppol_bis', 'factur_x', 'en16931' or 'unknown'.",
+          "x-ms-summary": "Flavor"
+        },
+        "customization_id": {
+          "type": "string",
+          "description": "The CustomizationID (specification identifier, BT-24) of the source, if any.",
+          "x-ms-summary": "Customization Id"
+        }
+      },
+      "required": [
+        "syntax",
+        "flavor",
+        "customization_id"
+      ]
+    },
+    "ParseResponse": {
+      "type": "object",
+      "description": "The answer of POST /v1/parse: the invoice as JSON and what invowerk detected.",
+      "properties": {
+        "model": {
+          "type": "object",
+          "description": "The invoice as JSON keyed on Business Terms. It has the schema of the POST /v1/generate request body (GenerateRequest), so you can edit it and create the invoice again.",
+          "additionalProperties": true,
+          "x-ms-summary": "Model"
+        },
+        "detection": {
+          "$ref": "#/definitions/ParseDetection"
+        },
+        "source": {
+          "type": "string",
+          "description": "Where the XML came from: 'xml' (you sent XML) or 'pdf-embedded' (taken from a ZUGFeRD / Factur-X PDF).",
+          "x-ms-summary": "Source"
+        }
+      },
+      "required": [
+        "model",
+        "detection",
+        "source"
+      ]
+    },
+    "PostalAddress": {
+      "type": "object",
+      "description": "A postal address (BG-5 seller, BG-8 buyer).\n\nEN 16931 requires only the country. XRechnung also requires city and post\ncode for the seller. invowerk does not check that the address exists.",
+      "properties": {
+        "city": {
+          "type": "string",
+          "description": "City (BT-37 seller, BT-52 buyer).",
+          "x-ms-summary": "City"
+        },
+        "post_code": {
+          "type": "string",
+          "description": "Post code (BT-38 seller, BT-53 buyer).",
+          "x-ms-summary": "Post Code"
+        },
+        "country_code": {
+          "type": "string",
+          "description": "Country code, ISO 3166-1 alpha-2, e.g. 'DE' (BT-40 seller, BT-55 buyer).",
+          "maxLength": 2,
+          "minLength": 2,
+          "x-ms-summary": "Country Code"
+        }
+      },
+      "required": [
+        "country_code"
+      ]
+    },
+    "RateLimitInfo": {
+      "type": "object",
+      "description": "How many requests you may still make in the current window. These are the\nsame numbers as the `X-RateLimit-*` response headers. `limit` is the size of the\nwindow, `remaining` what is left of it, and `reset` how many seconds until\nit refills (not a timestamp). All three are `null` in the rare case the\ncounter cannot be read; treat that as \"unknown\", not zero.",
+      "properties": {
+        "limit": {
+          "type": "integer",
+          "x-ms-summary": "Limit"
+        },
+        "remaining": {
+          "type": "integer",
+          "x-ms-summary": "Remaining"
+        },
+        "reset": {
+          "type": "integer",
+          "x-ms-summary": "Reset"
+        }
+      }
+    },
+    "RenderResponse": {
+      "type": "object",
+      "description": "The answer of POST /v1/render?format=json: the HTML and what invowerk detected.",
+      "properties": {
+        "html": {
+          "type": "string",
+          "description": "The rendered invoice as a complete HTML document.",
+          "x-ms-summary": "Html"
+        },
+        "lang": {
+          "type": "string",
+          "description": "The label language used: 'de' or 'en'.",
+          "x-ms-summary": "Lang"
+        },
+        "flavor": {
+          "type": "string",
+          "description": "The detected rule set, e.g. 'xrechnung', 'peppol_bis' or 'unknown'.",
+          "x-ms-summary": "Flavor"
+        },
+        "syntax": {
+          "type": "string",
+          "description": "The detected XML syntax, e.g. 'ubl_invoice' or 'cii'.",
+          "x-ms-summary": "Syntax"
+        }
+      },
+      "required": [
+        "html",
+        "lang",
+        "flavor",
+        "syntax"
+      ]
+    },
+    "RuleExplanation": {
+      "type": "object",
+      "description": "The explanation of one rule code in the requested language.\n\nIt explains the format rule and how to fix the invoice data. It is not tax\nadvice. ``explain_url`` links the German page for the code.",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "The rule code, e.g. 'BR-DE-21'.",
+          "x-ms-summary": "Code"
+        },
+        "lang": {
+          "type": "string",
+          "description": "Language of the explanation: 'de' or 'en'.",
+          "x-ms-summary": "Lang"
+        },
+        "severity": {
+          "type": "string",
+          "description": "Severity of the rule: 'fatal', 'warning' or 'information'.",
+          "x-ms-summary": "Severity"
+        },
+        "standard": {
+          "type": "string",
+          "description": "Source of the rule: 'EN16931', 'XRechnung', 'ZUGFeRD' or 'invowerk' (IW-* hints).",
+          "x-ms-summary": "Standard"
+        },
+        "bt_refs": {
+          "type": "array",
+          "description": "The EN 16931 Business Terms the rule is about, e.g. 'BT-10'.",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Bt Refs"
+        },
+        "title": {
+          "type": "string",
+          "description": "Short title of the rule.",
+          "x-ms-summary": "Title"
+        },
+        "meaning": {
+          "type": "string",
+          "description": "What the rule requires.",
+          "x-ms-summary": "Meaning"
+        },
+        "causes": {
+          "type": "array",
+          "description": "Common reasons why the rule fails.",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Causes"
+        },
+        "fixes": {
+          "type": "array",
+          "description": "How to fix the invoice data.",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Fixes"
+        },
+        "xpath_hints": {
+          "type": "array",
+          "description": "XPaths of the fields the rule checks.",
+          "items": {
+            "type": "string"
+          },
+          "x-ms-summary": "Xpath Hints"
+        },
+        "explain_url": {
+          "type": "string",
+          "description": "Path of the German explanation page /codes/<CODE>.",
+          "x-ms-summary": "Explain Url"
+        }
+      },
+      "required": [
+        "code",
+        "lang",
+        "severity",
+        "standard",
+        "bt_refs",
+        "title",
+        "meaning",
+        "causes",
+        "fixes",
+        "xpath_hints",
+        "explain_url"
+      ]
+    },
+    "ScenarioInfo": {
+      "type": "object",
+      "description": "The rule set that was applied: its configuration and scenario.",
+      "properties": {
+        "config": {
+          "type": "string",
+          "description": "'kosit-xrechnung' (the KoSIT configuration for XRechnung and EN 16931) or 'zugferd' (the FeRD rules for ZUGFeRD / Factur-X).",
+          "x-ms-summary": "Config"
+        },
+        "name": {
+          "type": "string",
+          "description": "The scenario name as the configuration states it.",
+          "x-ms-summary": "Name"
+        }
+      },
+      "required": [
+        "config",
+        "name"
+      ]
+    },
+    "SelfValidation": {
+      "type": "object",
+      "description": "The result of invowerk's own check of the generated XML.\n\nOnly in the ?format=json answer. It shows that the XML passed the check\nbefore it was returned.",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "description": "Always true. An invalid result returns HTTP 500 instead.",
+          "x-ms-summary": "Valid"
+        },
+        "lane": {
+          "type": "string",
+          "description": "Which check ran; always 'local' (invowerk's own check).",
+          "x-ms-summary": "Lane"
+        },
+        "finding_count": {
+          "type": "integer",
+          "description": "Number of findings of the check; all of them are non-fatal.",
+          "x-ms-summary": "Finding Count"
+        }
+      },
+      "required": [
+        "valid",
+        "lane",
+        "finding_count"
+      ]
+    },
+    "Seller": {
+      "type": "object",
+      "description": "The seller (BG-4).",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Seller name, the registered name (BT-27).",
+          "x-ms-summary": "Name"
+        },
+        "address": {
+          "$ref": "#/definitions/PostalAddress"
+        },
+        "vat_id": {
+          "type": "string",
+          "description": "Seller VAT ID, e.g. 'DE123456789' (BT-31). Needed when a line has VAT category 'S' (BR-S-02).",
+          "x-ms-summary": "Vat Id"
+        },
+        "contact_name": {
+          "type": "string",
+          "description": "Seller contact name; required for XRechnung (BT-41).",
+          "x-ms-summary": "Contact Name"
+        },
+        "contact_phone": {
+          "type": "string",
+          "description": "Seller contact phone; required for XRechnung (BT-42).",
+          "x-ms-summary": "Contact Phone"
+        },
+        "contact_email": {
+          "type": "string",
+          "description": "Seller contact email; required for XRechnung (BT-43).",
+          "x-ms-summary": "Contact Email"
+        },
+        "electronic_address": {
+          "type": "string",
+          "description": "Seller electronic address, e.g. an email address (BT-34).",
+          "x-ms-summary": "Electronic Address"
+        }
+      },
+      "required": [
+        "name",
+        "address"
+      ]
+    },
+    "Syntax": {
+      "type": "string",
+      "description": "The XML syntax of the invoice: UBL or CII.",
+      "enum": [
+        "cii",
+        "ubl"
+      ]
+    },
+    "TaxBreakdown": {
+      "type": "object",
+      "description": "One VAT breakdown: the totals for one VAT category and rate (BG-23).",
+      "properties": {
+        "taxable_amount": {
+          "type": "string",
+          "description": "Taxable amount of the category (BT-116).",
+          "x-ms-summary": "Taxable Amount"
+        },
+        "tax_amount": {
+          "type": "string",
+          "description": "VAT amount of the category (BT-117).",
+          "x-ms-summary": "Tax Amount"
+        },
+        "category": {
+          "type": "string",
+          "description": "VAT category code, e.g. 'S' for standard rate (BT-118).",
+          "default": "S",
+          "x-ms-summary": "Category"
+        },
+        "rate": {
+          "type": "string",
+          "description": "VAT rate of the category in percent (BT-119).",
+          "default": "19.00",
+          "x-ms-summary": "Rate"
+        }
+      },
+      "required": [
+        "taxable_amount",
+        "tax_amount"
+      ]
+    },
+    "ValidationResponse": {
+      "type": "object",
+      "description": "The result of POST /v1/validate. Always HTTP 200: a failed check is data,\nnot an error.",
+      "properties": {
+        "valid": {
+          "type": "boolean",
+          "description": "The overall result. For the XML, the KoSIT validator decides when it answered (verdict_source 'official'); otherwise invowerk's own check decides (no fatal finding). A fatal problem with the PDF of a ZUGFeRD / Factur-X invoice always makes it false.",
+          "x-ms-summary": "Valid"
+        },
+        "verdict_source": {
+          "type": "string",
+          "description": "'official' when the KoSIT validator decided the XML result, 'local' when invowerk's own check did (ZUGFeRD or Peppol rules, or KoSIT did not answer).",
+          "x-ms-summary": "Verdict Source"
+        },
+        "local_verdict": {
+          "type": "string",
+          "description": "invowerk's own result, 'valid' or 'invalid': 'invalid' when any format, business rule or PDF finding is fatal.",
+          "x-ms-summary": "Local Verdict"
+        },
+        "disagreement": {
+          "type": "boolean",
+          "description": "True when the KoSIT validator and invowerk's own check reach different results for the XML. The KoSIT result decides; the findings explain the difference.",
+          "x-ms-summary": "Disagreement"
+        },
+        "lane": {
+          "type": "string",
+          "description": "'official' when invowerk asked the KoSIT validator (even if it did not answer), else 'local'.",
+          "x-ms-summary": "Lane"
+        },
+        "official_verdict": {
+          "type": "string",
+          "description": "The KoSIT validator's result: 'valid', 'invalid' or 'unavailable' (it did not answer). Null when it was not asked, e.g. for ZUGFeRD or Peppol.",
+          "x-ms-summary": "Official Verdict"
+        },
+        "scenario": {
+          "$ref": "#/definitions/ScenarioInfo"
+        },
+        "pdfa_verdict": {
+          "type": "string",
+          "description": "PDF/A check of a ZUGFeRD / Factur-X PDF with veraPDF: 'valid', 'invalid' or 'unavailable'. Null when not checked (always for XML). Null does not mean the PDF is fine.",
+          "x-ms-summary": "Pdfa Verdict"
+        },
+        "detection": {
+          "type": "object",
+          "description": "What invowerk detected from the bytes: kind, syntax, flavor, customization_id, is_hybrid_pdf. For a PDF it describes the embedded XML.",
+          "additionalProperties": true,
+          "x-ms-summary": "Detection"
+        },
+        "errors": {
+          "$ref": "#/definitions/ErrorClasses"
+        },
+        "findings": {
+          "type": "array",
+          "description": "All format, business rule and PDF findings as one ordered list.",
+          "items": {
+            "$ref": "#/definitions/Finding"
+          },
+          "x-ms-summary": "Findings"
+        },
+        "rulesets": {
+          "type": "object",
+          "description": "The rule set versions used for this check, as {name: version}.",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "x-ms-summary": "Rulesets"
+        },
+        "evidence": {
+          "$ref": "#/definitions/Evidence"
+        },
+        "e_rechnung_de": {
+          "$ref": "#/definitions/ERechnungDe"
+        },
+        "hints": {
+          "type": "array",
+          "description": "Extra observations by invowerk (IW-* codes), e.g. a wrong IBAN check digit. They never change valid, verdict_source or e_rechnung_de.",
+          "items": {
+            "$ref": "#/definitions/HintInfo"
+          },
+          "x-ms-summary": "Hints"
+        }
+      },
+      "required": [
+        "valid",
+        "verdict_source",
+        "local_verdict",
+        "disagreement",
+        "lane",
+        "detection",
+        "errors",
+        "evidence",
+        "e_rechnung_de"
+      ]
+    },
+    "ValidatorVersions": {
+      "type": "object",
+      "description": "The software versions that produced the result.",
+      "properties": {
+        "invowerk": {
+          "type": "string",
+          "description": "The invowerk version, or 'unknown'.",
+          "x-ms-summary": "Invowerk"
+        },
+        "appkit": {
+          "type": "string",
+          "description": "The version of the platform invowerk runs on, or 'unknown'.",
+          "x-ms-summary": "Appkit"
+        }
+      },
+      "required": [
+        "invowerk",
+        "appkit"
+      ]
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-API-Key"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ],
+  "x-ms-connector-metadata": [
+    {
+      "propertyName": "Website",
+      "propertyValue": "https://invowerk.dev"
+    },
+    {
+      "propertyName": "Privacy policy",
+      "propertyValue": "https://invowerk.dev/privacy"
+    },
+    {
+      "propertyName": "Categories",
+      "propertyValue": "Finance;Productivity"
+    }
+  ]
+}

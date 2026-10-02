@@ -1,0 +1,14 @@
+[
+  {
+    "label": "invowerk",
+    "modules": [
+      "getMe",
+      "parseInvoice",
+      "convertInvoice",
+      "generateInvoice",
+      "explainCodes",
+      "renderInvoice",
+      "validateInvoice"
+    ]
+  }
+]

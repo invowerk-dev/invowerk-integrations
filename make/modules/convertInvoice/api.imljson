@@ -1,0 +1,28 @@
+{
+  "url": "/v1/convert",
+  "method": "POST",
+  "qs": {
+    "target_syntax": "{{parameters.target_syntax}}",
+    "target_flavor": "{{ifempty(parameters.target_flavor, undefined)}}",
+    "format": "{{ifempty(parameters.format, undefined)}}"
+  },
+  "type": "multipart/form-data",
+  "body": {
+    "file": {
+      "value": "{{parameters.file_data}}",
+      "options": {
+        "filename": "{{parameters.file_name}}"
+      }
+    }
+  },
+  "response": {
+    "type": {
+      "*": "text",
+      "400-599": "json"
+    },
+    "output": {
+      "text": "{{body}}",
+      "content_type": "{{headers.`content-type`}}"
+    }
+  }
+}

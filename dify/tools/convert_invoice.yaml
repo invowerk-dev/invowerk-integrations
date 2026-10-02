@@ -1,0 +1,63 @@
+identity:
+  name: "convert_invoice"
+  author: "podshalocef"
+  label:
+    en_US: "Convert invoice"
+description:
+  human:
+    en_US: "Convert an e-invoice between UBL and CII."
+  llm: "Convert an e-invoice between UBL and CII."
+parameters:
+  - name: "target_syntax"
+    type: "select"
+    required: true
+    label:
+      en_US: "Target syntax"
+    human_description:
+      en_US: "The XML syntax to convert to: 'cii' or 'ubl'."
+    llm_description: "The XML syntax to convert to: 'cii' or 'ubl'."
+    form: "llm"
+    options:
+      - value: "cii"
+        label:
+          en_US: "cii"
+      - value: "ubl"
+        label:
+          en_US: "ubl"
+  - name: "target_flavor"
+    type: "select"
+    required: false
+    label:
+      en_US: "Target flavor"
+    human_description:
+      en_US: "Optional rule set of the result: 'en16931' or 'xrechnung'. Without it the flavor of the source is kept."
+    llm_description: "Optional rule set of the result: 'en16931' or 'xrechnung'. Without it the flavor of the source is kept."
+    form: "llm"
+    options:
+      - value: "en16931"
+        label:
+          en_US: "en16931"
+      - value: "xrechnung"
+        label:
+          en_US: "xrechnung"
+  - name: "format"
+    type: "string"
+    required: false
+    label:
+      en_US: "Format"
+    human_description:
+      en_US: "'json' returns {xml, syntax, flavor, self_validation}; omitted returns raw application/xml."
+    llm_description: "'json' returns {xml, syntax, flavor, self_validation}; omitted returns raw application/xml."
+    form: "llm"
+  - name: "file"
+    type: "file"
+    required: true
+    label:
+      en_US: "File"
+    human_description:
+      en_US: "The invoice file (XML or PDF)."
+    llm_description: "The invoice file (XML or PDF)."
+    form: "llm"
+extra:
+  python:
+    source: "tools/convert_invoice.py"

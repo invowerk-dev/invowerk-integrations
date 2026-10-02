@@ -1,0 +1,20 @@
+[
+  {
+    "name": "code",
+    "label": "Code",
+    "required": true,
+    "type": "array",
+    "spec": {
+      "type": "text",
+      "label": "Code"
+    },
+    "help": "One or more codes; repeat the parameter: ?code=BR-DE-21&code=IW-IBAN."
+  },
+  {
+    "name": "lang",
+    "label": "Lang",
+    "required": false,
+    "type": "text",
+    "help": "Language of the explanation, `de` or `en`. Without it, the Accept-Language header decides, otherwise German."
+  }
+]

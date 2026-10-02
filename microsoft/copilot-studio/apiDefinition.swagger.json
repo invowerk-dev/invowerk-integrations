@@ -1,0 +1,66 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "invowerk MCP",
+    "description": "German e-invoice checker: ZUGFeRD/Factur-X PDFs incl. PDF/A, XRechnung via the KoSIT validator, Peppol BIS. Free web tool, API, MCP.",
+    "version": "1.0.1",
+    "contact": {
+      "name": "invowerk support",
+      "url": "https://invowerk.dev/support",
+      "email": "support@invowerk.dev"
+    }
+  },
+  "host": "api.invowerk.dev",
+  "basePath": "/mcp",
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/": {
+      "post": {
+        "summary": "invowerk MCP server",
+        "description": "Sends a JSON-RPC message to the invowerk MCP server over Streamable HTTP. The agent discovers the tools at runtime.",
+        "x-ms-agentic-protocol": "mcp-streamable-1.0",
+        "operationId": "InvokeMCP",
+        "x-ms-visibility": "important",
+        "responses": {
+          "200": {
+            "description": "Success."
+          }
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "in": "header",
+      "name": "X-API-Key"
+    }
+  },
+  "security": [
+    {
+      "api_key": []
+    }
+  ],
+  "x-ms-connector-metadata": [
+    {
+      "propertyName": "Website",
+      "propertyValue": "https://invowerk.dev"
+    },
+    {
+      "propertyName": "Privacy policy",
+      "propertyValue": "https://invowerk.dev/privacy"
+    },
+    {
+      "propertyName": "Categories",
+      "propertyValue": "Finance;Productivity"
+    }
+  ]
+}

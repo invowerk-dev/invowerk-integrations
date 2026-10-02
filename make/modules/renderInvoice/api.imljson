@@ -1,0 +1,27 @@
+{
+  "url": "/v1/render",
+  "method": "POST",
+  "qs": {
+    "lang": "{{ifempty(parameters.lang, undefined)}}",
+    "format": "{{ifempty(parameters.format, undefined)}}"
+  },
+  "type": "multipart/form-data",
+  "body": {
+    "file": {
+      "value": "{{parameters.file_data}}",
+      "options": {
+        "filename": "{{parameters.file_name}}"
+      }
+    }
+  },
+  "response": {
+    "type": {
+      "*": "text",
+      "400-599": "json"
+    },
+    "output": {
+      "text": "{{body}}",
+      "content_type": "{{headers.`content-type`}}"
+    }
+  }
+}

@@ -1,0 +1,31 @@
+identity:
+  name: "explain_codes"
+  author: "podshalocef"
+  label:
+    en_US: "Explain codes"
+description:
+  human:
+    en_US: "Explain an error code."
+  llm: "Explain an error code. Explain rule codes and invowerk's own `IW-*` Hinweise in German or English."
+parameters:
+  - name: "code"
+    type: "string"
+    required: true
+    label:
+      en_US: "Code"
+    human_description:
+      en_US: "One or more codes; repeat the parameter: ?code=BR-DE-21&code=IW-IBAN. (comma-separated values)"
+    llm_description: "One or more codes; repeat the parameter: ?code=BR-DE-21&code=IW-IBAN. (comma-separated values)"
+    form: "llm"
+  - name: "lang"
+    type: "string"
+    required: false
+    label:
+      en_US: "Lang"
+    human_description:
+      en_US: "Language of the explanation, `de` or `en`. Without it, the Accept-Language header decides, otherwise German."
+    llm_description: "Language of the explanation, `de` or `en`. Without it, the Accept-Language header decides, otherwise German."
+    form: "llm"
+extra:
+  python:
+    source: "tools/explain_codes.py"

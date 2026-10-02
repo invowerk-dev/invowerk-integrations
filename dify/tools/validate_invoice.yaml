@@ -1,0 +1,42 @@
+identity:
+  name: "validate_invoice"
+  author: "podshalocef"
+  label:
+    en_US: "Validate invoice"
+description:
+  human:
+    en_US: "Check an e-invoice."
+  llm: "Check an e-invoice. Check an e-invoice against EN 16931 and the German rules."
+parameters:
+  - name: "explain"
+    type: "boolean"
+    required: false
+    label:
+      en_US: "Explain"
+    human_description:
+      en_US: "Explain"
+    llm_description: "Explain"
+    form: "llm"
+    default: false
+  - name: "lang"
+    type: "string"
+    required: false
+    label:
+      en_US: "Lang"
+    human_description:
+      en_US: "Lang"
+    llm_description: "Lang"
+    form: "llm"
+    default: "de"
+  - name: "file"
+    type: "file"
+    required: true
+    label:
+      en_US: "File"
+    human_description:
+      en_US: "The invoice file (XML or PDF)."
+    llm_description: "The invoice file (XML or PDF)."
+    form: "llm"
+extra:
+  python:
+    source: "tools/validate_invoice.py"

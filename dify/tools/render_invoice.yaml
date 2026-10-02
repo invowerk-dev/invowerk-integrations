@@ -1,0 +1,40 @@
+identity:
+  name: "render_invoice"
+  author: "podshalocef"
+  label:
+    en_US: "Render invoice"
+description:
+  human:
+    en_US: "Render an e-invoice as HTML."
+  llm: "Render an e-invoice as HTML. Render an XML e-invoice as a readable HTML page."
+parameters:
+  - name: "lang"
+    type: "string"
+    required: false
+    label:
+      en_US: "Lang"
+    human_description:
+      en_US: "Label language, 'de' or 'en'. Default: Accept-Language, then 'de'."
+    llm_description: "Label language, 'de' or 'en'. Default: Accept-Language, then 'de'."
+    form: "llm"
+  - name: "format"
+    type: "string"
+    required: false
+    label:
+      en_US: "Format"
+    human_description:
+      en_US: "'json' returns {html, lang, flavor, syntax}; omitted returns raw text/html."
+    llm_description: "'json' returns {html, lang, flavor, syntax}; omitted returns raw text/html."
+    form: "llm"
+  - name: "file"
+    type: "file"
+    required: false
+    label:
+      en_US: "File"
+    human_description:
+      en_US: "The invoice XML as a multipart file part."
+    llm_description: "The invoice XML as a multipart file part."
+    form: "llm"
+extra:
+  python:
+    source: "tools/render_invoice.py"

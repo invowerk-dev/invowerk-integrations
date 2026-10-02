@@ -1,0 +1,34 @@
+[
+  {
+    "name": "model",
+    "type": "collection",
+    "label": "Model"
+  },
+  {
+    "name": "detection",
+    "type": "collection",
+    "label": "ParseDetection",
+    "spec": [
+      {
+        "name": "syntax",
+        "type": "text",
+        "label": "Syntax"
+      },
+      {
+        "name": "flavor",
+        "type": "text",
+        "label": "Flavor"
+      },
+      {
+        "name": "customization_id",
+        "type": "text",
+        "label": "Customization Id"
+      }
+    ]
+  },
+  {
+    "name": "source",
+    "type": "text",
+    "label": "Source"
+  }
+]

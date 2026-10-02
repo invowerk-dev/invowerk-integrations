@@ -1,0 +1,41 @@
+{
+  "valid": true,
+  "verdict_source": "sample",
+  "local_verdict": "sample",
+  "disagreement": true,
+  "lane": "sample",
+  "official_verdict": "sample",
+  "scenario": {
+    "config": "sample",
+    "name": "sample"
+  },
+  "pdfa_verdict": "sample",
+  "detection": {},
+  "errors": {
+    "format": [],
+    "business_rules": [],
+    "carrier": [],
+    "content": {
+      "status": "sample",
+      "note": "sample"
+    }
+  },
+  "findings": [],
+  "rulesets": {},
+  "evidence": {
+    "document_sha256": "sample",
+    "document_bytes": 1,
+    "checked_at": "sample",
+    "validator": {
+      "invowerk": "sample",
+      "appkit": "sample"
+    }
+  },
+  "e_rechnung_de": {
+    "status": "sample",
+    "reason": "sample",
+    "basis": "sample",
+    "note": "sample"
+  },
+  "hints": []
+}

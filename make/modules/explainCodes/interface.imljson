@@ -1,0 +1,69 @@
+[
+  {
+    "name": "lang",
+    "type": "text",
+    "label": "Lang"
+  },
+  {
+    "name": "explanations",
+    "type": "array",
+    "label": "Explanations",
+    "spec": [
+      {
+        "name": "code",
+        "type": "text",
+        "label": "Code"
+      },
+      {
+        "name": "lang",
+        "type": "text",
+        "label": "Lang"
+      },
+      {
+        "name": "severity",
+        "type": "text",
+        "label": "Severity"
+      },
+      {
+        "name": "standard",
+        "type": "text",
+        "label": "Standard"
+      },
+      {
+        "name": "bt_refs",
+        "type": "array",
+        "label": "Bt Refs"
+      },
+      {
+        "name": "title",
+        "type": "text",
+        "label": "Title"
+      },
+      {
+        "name": "meaning",
+        "type": "text",
+        "label": "Meaning"
+      },
+      {
+        "name": "causes",
+        "type": "array",
+        "label": "Causes"
+      },
+      {
+        "name": "fixes",
+        "type": "array",
+        "label": "Fixes"
+      },
+      {
+        "name": "xpath_hints",
+        "type": "array",
+        "label": "Xpath Hints"
+      },
+      {
+        "name": "explain_url",
+        "type": "text",
+        "label": "Explain Url"
+      }
+    ]
+  }
+]

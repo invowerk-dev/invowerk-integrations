@@ -1,0 +1,22 @@
+identity:
+  name: "parse_invoice"
+  author: "podshalocef"
+  label:
+    en_US: "Parse invoice"
+description:
+  human:
+    en_US: "Read an e-invoice into JSON."
+  llm: "Read an e-invoice into JSON. Read an existing e-invoice into JSON keyed on EN 16931 Business Terms."
+parameters:
+  - name: "file"
+    type: "file"
+    required: true
+    label:
+      en_US: "File"
+    human_description:
+      en_US: "The invoice file (XML or PDF)."
+    llm_description: "The invoice file (XML or PDF)."
+    form: "llm"
+extra:
+  python:
+    source: "tools/parse_invoice.py"

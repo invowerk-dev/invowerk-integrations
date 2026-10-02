@@ -1,0 +1,34 @@
+{
+  "url": "/v1/generate",
+  "method": "POST",
+  "qs": {
+    "format": "{{ifempty(parameters.format, undefined)}}"
+  },
+  "type": "json",
+  "body": {
+    "syntax": "{{ifempty(parameters.syntax, undefined)}}",
+    "flavor": "{{ifempty(parameters.flavor, undefined)}}",
+    "invoice_number": "{{parameters.invoice_number}}",
+    "issue_date": "{{parameters.issue_date}}",
+    "currency": "{{ifempty(parameters.currency, undefined)}}",
+    "invoice_type_code": "{{ifempty(parameters.invoice_type_code, undefined)}}",
+    "buyer_reference": "{{ifempty(parameters.buyer_reference, undefined)}}",
+    "due_date": "{{ifempty(parameters.due_date, undefined)}}",
+    "payment_iban": "{{ifempty(parameters.payment_iban, undefined)}}",
+    "seller": "{{parameters.seller}}",
+    "buyer": "{{parameters.buyer}}",
+    "lines": "{{parameters.lines}}",
+    "tax_breakdown": "{{parameters.tax_breakdown}}",
+    "totals": "{{parameters.totals}}"
+  },
+  "response": {
+    "type": {
+      "*": "text",
+      "400-599": "json"
+    },
+    "output": {
+      "text": "{{body}}",
+      "content_type": "{{headers.`content-type`}}"
+    }
+  }
+}

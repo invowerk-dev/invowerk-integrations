@@ -1,0 +1,166 @@
+identity:
+  name: "generate_invoice"
+  author: "podshalocef"
+  label:
+    en_US: "Generate invoice"
+description:
+  human:
+    en_US: "Create an e-invoice from JSON."
+  llm: "Create an e-invoice from JSON. Create an EN 16931 e-invoice from JSON."
+parameters:
+  - name: "format"
+    type: "string"
+    required: false
+    label:
+      en_US: "Format"
+    human_description:
+      en_US: "'json' returns {xml, syntax, flavor, self_validation}; omitted returns raw application/xml."
+    llm_description: "'json' returns {xml, syntax, flavor, self_validation}; omitted returns raw application/xml."
+    form: "llm"
+  - name: "syntax"
+    type: "select"
+    required: false
+    label:
+      en_US: "Syntax"
+    human_description:
+      en_US: "XML syntax of the invoice: 'ubl' or 'cii'."
+    llm_description: "XML syntax of the invoice: 'ubl' or 'cii'."
+    form: "llm"
+    options:
+      - value: "cii"
+        label:
+          en_US: "cii"
+      - value: "ubl"
+        label:
+          en_US: "ubl"
+    default: "ubl"
+  - name: "flavor"
+    type: "select"
+    required: false
+    label:
+      en_US: "Flavor"
+    human_description:
+      en_US: "Rule set: 'en16931' (plain EN 16931) or 'xrechnung' (German rules)."
+    llm_description: "Rule set: 'en16931' (plain EN 16931) or 'xrechnung' (German rules)."
+    form: "llm"
+    options:
+      - value: "en16931"
+        label:
+          en_US: "en16931"
+      - value: "xrechnung"
+        label:
+          en_US: "xrechnung"
+    default: "en16931"
+  - name: "invoice_number"
+    type: "string"
+    required: true
+    label:
+      en_US: "Invoice number"
+    human_description:
+      en_US: "Invoice number (BT-1)."
+    llm_description: "Invoice number (BT-1)."
+    form: "llm"
+  - name: "issue_date"
+    type: "string"
+    required: true
+    label:
+      en_US: "Issue date"
+    human_description:
+      en_US: "Issue date, 'YYYY-MM-DD' (BT-2)."
+    llm_description: "Issue date, 'YYYY-MM-DD' (BT-2)."
+    form: "llm"
+  - name: "currency"
+    type: "string"
+    required: false
+    label:
+      en_US: "Currency"
+    human_description:
+      en_US: "Currency code, ISO 4217, e.g. 'EUR' (BT-5)."
+    llm_description: "Currency code, ISO 4217, e.g. 'EUR' (BT-5)."
+    form: "llm"
+    default: "EUR"
+  - name: "invoice_type_code"
+    type: "string"
+    required: false
+    label:
+      en_US: "Invoice type code"
+    human_description:
+      en_US: "Invoice type code from UNTDID 1001; '380' is a commercial invoice (BT-3)."
+    llm_description: "Invoice type code from UNTDID 1001; '380' is a commercial invoice (BT-3)."
+    form: "llm"
+    default: "380"
+  - name: "buyer_reference"
+    type: "string"
+    required: false
+    label:
+      en_US: "Buyer reference"
+    human_description:
+      en_US: "Buyer reference, in Germany often the Leitweg-ID (BT-10). Required for flavor 'xrechnung' (BR-DE-15), optional for plain EN 16931."
+    llm_description: "Buyer reference, in Germany often the Leitweg-ID (BT-10). Required for flavor 'xrechnung' (BR-DE-15), optional for plain EN 16931."
+    form: "llm"
+  - name: "due_date"
+    type: "string"
+    required: false
+    label:
+      en_US: "Due date"
+    human_description:
+      en_US: "Payment due date, 'YYYY-MM-DD' (BT-9)."
+    llm_description: "Payment due date, 'YYYY-MM-DD' (BT-9)."
+    form: "llm"
+  - name: "payment_iban"
+    type: "string"
+    required: false
+    label:
+      en_US: "Payment IBAN"
+    human_description:
+      en_US: "IBAN of the payee account for a bank transfer (BT-84)."
+    llm_description: "IBAN of the payee account for a bank transfer (BT-84)."
+    form: "llm"
+  - name: "seller"
+    type: "string"
+    required: true
+    label:
+      en_US: "Seller"
+    human_description:
+      en_US: "The seller (BG-4). (JSON object)"
+    llm_description: "The seller (BG-4). (JSON object)"
+    form: "llm"
+  - name: "buyer"
+    type: "string"
+    required: true
+    label:
+      en_US: "Buyer"
+    human_description:
+      en_US: "The buyer (BG-7). (JSON object)"
+    llm_description: "The buyer (BG-7). (JSON object)"
+    form: "llm"
+  - name: "lines"
+    type: "string"
+    required: true
+    label:
+      en_US: "Lines"
+    human_description:
+      en_US: "One or more invoice lines (BG-25). (JSON array)"
+    llm_description: "One or more invoice lines (BG-25). (JSON array)"
+    form: "llm"
+  - name: "tax_breakdown"
+    type: "string"
+    required: true
+    label:
+      en_US: "Tax breakdown"
+    human_description:
+      en_US: "One or more VAT breakdowns, one per VAT category and rate (BG-23). (JSON array)"
+    llm_description: "One or more VAT breakdowns, one per VAT category and rate (BG-23). (JSON array)"
+    form: "llm"
+  - name: "totals"
+    type: "string"
+    required: true
+    label:
+      en_US: "Totals"
+    human_description:
+      en_US: "The document totals (BG-22). (JSON object)"
+    llm_description: "The document totals (BG-22). (JSON object)"
+    form: "llm"
+extra:
+  python:
+    source: "tools/generate_invoice.py"

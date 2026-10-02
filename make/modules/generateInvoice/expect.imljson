@@ -1,0 +1,131 @@
+[
+  {
+    "name": "format",
+    "label": "Format",
+    "required": false,
+    "type": "text",
+    "help": "'json' returns {xml, syntax, flavor, self_validation}; omitted returns raw application/xml."
+  },
+  {
+    "name": "syntax",
+    "label": "Syntax",
+    "required": false,
+    "type": "select",
+    "options": [
+      {
+        "label": "cii",
+        "value": "cii"
+      },
+      {
+        "label": "ubl",
+        "value": "ubl"
+      }
+    ],
+    "help": "XML syntax of the invoice: 'ubl' or 'cii'.",
+    "default": "ubl"
+  },
+  {
+    "name": "flavor",
+    "label": "Flavor",
+    "required": false,
+    "type": "select",
+    "options": [
+      {
+        "label": "en16931",
+        "value": "en16931"
+      },
+      {
+        "label": "xrechnung",
+        "value": "xrechnung"
+      }
+    ],
+    "help": "Rule set: 'en16931' (plain EN 16931) or 'xrechnung' (German rules).",
+    "default": "en16931"
+  },
+  {
+    "name": "invoice_number",
+    "label": "Invoice number",
+    "required": true,
+    "type": "text",
+    "help": "Invoice number (BT-1)."
+  },
+  {
+    "name": "issue_date",
+    "label": "Issue date",
+    "required": true,
+    "type": "text",
+    "help": "Issue date, 'YYYY-MM-DD' (BT-2)."
+  },
+  {
+    "name": "currency",
+    "label": "Currency",
+    "required": false,
+    "type": "text",
+    "help": "Currency code, ISO 4217, e.g. 'EUR' (BT-5).",
+    "default": "EUR"
+  },
+  {
+    "name": "invoice_type_code",
+    "label": "Invoice type code",
+    "required": false,
+    "type": "text",
+    "help": "Invoice type code from UNTDID 1001; '380' is a commercial invoice (BT-3).",
+    "default": "380"
+  },
+  {
+    "name": "buyer_reference",
+    "label": "Buyer reference",
+    "required": false,
+    "type": "text",
+    "help": "Buyer reference, in Germany often the Leitweg-ID (BT-10). Required for flavor 'xrechnung' (BR-DE-15), optional for plain EN 16931."
+  },
+  {
+    "name": "due_date",
+    "label": "Due date",
+    "required": false,
+    "type": "text",
+    "help": "Payment due date, 'YYYY-MM-DD' (BT-9)."
+  },
+  {
+    "name": "payment_iban",
+    "label": "Payment iban",
+    "required": false,
+    "type": "text",
+    "help": "IBAN of the payee account for a bank transfer (BT-84)."
+  },
+  {
+    "name": "seller",
+    "label": "Seller",
+    "required": true,
+    "type": "json",
+    "help": "The seller (BG-4). (JSON)"
+  },
+  {
+    "name": "buyer",
+    "label": "Buyer",
+    "required": true,
+    "type": "json",
+    "help": "The buyer (BG-7). (JSON)"
+  },
+  {
+    "name": "lines",
+    "label": "Lines",
+    "required": true,
+    "type": "json",
+    "help": "One or more invoice lines (BG-25). (JSON)"
+  },
+  {
+    "name": "tax_breakdown",
+    "label": "Tax breakdown",
+    "required": true,
+    "type": "json",
+    "help": "One or more VAT breakdowns, one per VAT category and rate (BG-23). (JSON)"
+  },
+  {
+    "name": "totals",
+    "label": "Totals",
+    "required": true,
+    "type": "json",
+    "help": "The document totals (BG-22). (JSON)"
+  }
+]

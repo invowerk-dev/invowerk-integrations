@@ -1,0 +1,21 @@
+{
+  "url": "/v1/validate",
+  "method": "POST",
+  "qs": {
+    "explain": "{{parameters.explain}}",
+    "lang": "{{ifempty(parameters.lang, undefined)}}"
+  },
+  "type": "multipart/form-data",
+  "body": {
+    "file": {
+      "value": "{{parameters.file_data}}",
+      "options": {
+        "filename": "{{parameters.file_name}}"
+      }
+    }
+  },
+  "response": {
+    "type": "json",
+    "output": "{{body}}"
+  }
+}

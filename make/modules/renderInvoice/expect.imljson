@@ -1,0 +1,31 @@
+[
+  {
+    "name": "lang",
+    "label": "Lang",
+    "required": false,
+    "type": "text",
+    "help": "Label language, 'de' or 'en'. Default: Accept-Language, then 'de'."
+  },
+  {
+    "name": "format",
+    "label": "Format",
+    "required": false,
+    "type": "text",
+    "help": "'json' returns {html, lang, flavor, syntax}; omitted returns raw text/html."
+  },
+  {
+    "name": "file_name",
+    "type": "filename",
+    "label": "File name",
+    "required": false,
+    "semantic": "file:name"
+  },
+  {
+    "name": "file_data",
+    "type": "buffer",
+    "label": "File data",
+    "required": false,
+    "semantic": "file:data",
+    "help": "The invoice XML as a multipart file part."
+  }
+]

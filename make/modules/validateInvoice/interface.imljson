@@ -1,0 +1,354 @@
+[
+  {
+    "name": "valid",
+    "type": "boolean",
+    "label": "Valid"
+  },
+  {
+    "name": "verdict_source",
+    "type": "text",
+    "label": "Verdict Source"
+  },
+  {
+    "name": "local_verdict",
+    "type": "text",
+    "label": "Local Verdict"
+  },
+  {
+    "name": "disagreement",
+    "type": "boolean",
+    "label": "Disagreement"
+  },
+  {
+    "name": "lane",
+    "type": "text",
+    "label": "Lane"
+  },
+  {
+    "name": "official_verdict",
+    "type": "text",
+    "label": "Official Verdict"
+  },
+  {
+    "name": "scenario",
+    "type": "collection",
+    "label": "ScenarioInfo",
+    "spec": [
+      {
+        "name": "config",
+        "type": "text",
+        "label": "Config"
+      },
+      {
+        "name": "name",
+        "type": "text",
+        "label": "Name"
+      }
+    ]
+  },
+  {
+    "name": "pdfa_verdict",
+    "type": "text",
+    "label": "Pdfa Verdict"
+  },
+  {
+    "name": "detection",
+    "type": "collection",
+    "label": "Detection"
+  },
+  {
+    "name": "errors",
+    "type": "collection",
+    "label": "ErrorClasses",
+    "spec": [
+      {
+        "name": "format",
+        "type": "array",
+        "label": "Format",
+        "spec": [
+          {
+            "name": "rule_id",
+            "type": "text",
+            "label": "Rule Id"
+          },
+          {
+            "name": "error_class",
+            "type": "text",
+            "label": "Error Class"
+          },
+          {
+            "name": "severity",
+            "type": "text",
+            "label": "Severity"
+          },
+          {
+            "name": "xpath",
+            "type": "text",
+            "label": "Xpath"
+          },
+          {
+            "name": "message",
+            "type": "text",
+            "label": "Message"
+          },
+          {
+            "name": "explain_url",
+            "type": "text",
+            "label": "Explain Url"
+          },
+          {
+            "name": "explain",
+            "type": "collection",
+            "label": "Explain"
+          }
+        ]
+      },
+      {
+        "name": "business_rules",
+        "type": "array",
+        "label": "Business Rules",
+        "spec": [
+          {
+            "name": "rule_id",
+            "type": "text",
+            "label": "Rule Id"
+          },
+          {
+            "name": "error_class",
+            "type": "text",
+            "label": "Error Class"
+          },
+          {
+            "name": "severity",
+            "type": "text",
+            "label": "Severity"
+          },
+          {
+            "name": "xpath",
+            "type": "text",
+            "label": "Xpath"
+          },
+          {
+            "name": "message",
+            "type": "text",
+            "label": "Message"
+          },
+          {
+            "name": "explain_url",
+            "type": "text",
+            "label": "Explain Url"
+          },
+          {
+            "name": "explain",
+            "type": "collection",
+            "label": "Explain"
+          }
+        ]
+      },
+      {
+        "name": "carrier",
+        "type": "array",
+        "label": "Carrier",
+        "spec": [
+          {
+            "name": "rule_id",
+            "type": "text",
+            "label": "Rule Id"
+          },
+          {
+            "name": "error_class",
+            "type": "text",
+            "label": "Error Class"
+          },
+          {
+            "name": "severity",
+            "type": "text",
+            "label": "Severity"
+          },
+          {
+            "name": "xpath",
+            "type": "text",
+            "label": "Xpath"
+          },
+          {
+            "name": "message",
+            "type": "text",
+            "label": "Message"
+          },
+          {
+            "name": "explain_url",
+            "type": "text",
+            "label": "Explain Url"
+          },
+          {
+            "name": "explain",
+            "type": "collection",
+            "label": "Explain"
+          }
+        ]
+      },
+      {
+        "name": "content",
+        "type": "collection",
+        "label": "ContentClass",
+        "spec": [
+          {
+            "name": "status",
+            "type": "text",
+            "label": "Status"
+          },
+          {
+            "name": "note",
+            "type": "text",
+            "label": "Note"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "findings",
+    "type": "array",
+    "label": "Findings",
+    "spec": [
+      {
+        "name": "rule_id",
+        "type": "text",
+        "label": "Rule Id"
+      },
+      {
+        "name": "error_class",
+        "type": "text",
+        "label": "Error Class"
+      },
+      {
+        "name": "severity",
+        "type": "text",
+        "label": "Severity"
+      },
+      {
+        "name": "xpath",
+        "type": "text",
+        "label": "Xpath"
+      },
+      {
+        "name": "message",
+        "type": "text",
+        "label": "Message"
+      },
+      {
+        "name": "explain_url",
+        "type": "text",
+        "label": "Explain Url"
+      },
+      {
+        "name": "explain",
+        "type": "collection",
+        "label": "Explain"
+      }
+    ]
+  },
+  {
+    "name": "rulesets",
+    "type": "collection",
+    "label": "Rulesets"
+  },
+  {
+    "name": "evidence",
+    "type": "collection",
+    "label": "Evidence",
+    "spec": [
+      {
+        "name": "document_sha256",
+        "type": "text",
+        "label": "Document Sha256"
+      },
+      {
+        "name": "document_bytes",
+        "type": "number",
+        "label": "Document Bytes"
+      },
+      {
+        "name": "checked_at",
+        "type": "text",
+        "label": "Checked At"
+      },
+      {
+        "name": "validator",
+        "type": "collection",
+        "label": "ValidatorVersions",
+        "spec": [
+          {
+            "name": "invowerk",
+            "type": "text",
+            "label": "Invowerk"
+          },
+          {
+            "name": "appkit",
+            "type": "text",
+            "label": "Appkit"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "name": "e_rechnung_de",
+    "type": "collection",
+    "label": "ERechnungDe",
+    "spec": [
+      {
+        "name": "status",
+        "type": "text",
+        "label": "Status"
+      },
+      {
+        "name": "reason",
+        "type": "text",
+        "label": "Reason"
+      },
+      {
+        "name": "basis",
+        "type": "text",
+        "label": "Basis"
+      },
+      {
+        "name": "note",
+        "type": "text",
+        "label": "Note"
+      }
+    ]
+  },
+  {
+    "name": "hints",
+    "type": "array",
+    "label": "Hints",
+    "spec": [
+      {
+        "name": "code",
+        "type": "text",
+        "label": "Code"
+      },
+      {
+        "name": "severity",
+        "type": "text",
+        "label": "Severity"
+      },
+      {
+        "name": "message",
+        "type": "text",
+        "label": "Message"
+      },
+      {
+        "name": "bt_refs",
+        "type": "array",
+        "label": "Bt Refs"
+      },
+      {
+        "name": "explain_url",
+        "type": "text",
+        "label": "Explain Url"
+      }
+    ]
+  }
+]

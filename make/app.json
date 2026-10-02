@@ -1,0 +1,55 @@
+{
+  "name": "invowerk-g9ynof",
+  "version": 1,
+  "label": "invowerk",
+  "description": "Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRechnung, ZUGFeRD and Factur-X invoices into fields.",
+  "theme": "#008251",
+  "connection": {
+    "label": "invowerk",
+    "type": "basic"
+  },
+  "modules": [
+    {
+      "name": "getMe",
+      "typeId": 4,
+      "label": "Your plan, remaining requests, and remaining credits",
+      "description": "Check where you stand before a call fails."
+    },
+    {
+      "name": "parseInvoice",
+      "typeId": 4,
+      "label": "Read an e-invoice into JSON",
+      "description": "Read an existing e-invoice into JSON keyed on EN 16931 Business Terms."
+    },
+    {
+      "name": "convertInvoice",
+      "typeId": 4,
+      "label": "Convert an e-invoice between UBL and CII",
+      "description": "Convert an e-invoice between UBL and CII."
+    },
+    {
+      "name": "generateInvoice",
+      "typeId": 4,
+      "label": "Create an e-invoice from JSON",
+      "description": "Create an EN 16931 e-invoice from JSON."
+    },
+    {
+      "name": "explainCodes",
+      "typeId": 4,
+      "label": "Explain an error code",
+      "description": "Explain rule codes and invowerk's own `IW-*` Hinweise in German or English."
+    },
+    {
+      "name": "renderInvoice",
+      "typeId": 4,
+      "label": "Render an e-invoice as HTML",
+      "description": "Render an XML e-invoice as a readable HTML page."
+    },
+    {
+      "name": "validateInvoice",
+      "typeId": 4,
+      "label": "Check an e-invoice",
+      "description": "Check an e-invoice against EN 16931 and the German rules."
+    }
+  ]
+}

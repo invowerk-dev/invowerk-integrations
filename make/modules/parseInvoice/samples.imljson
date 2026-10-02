@@ -1,0 +1,9 @@
+{
+  "model": {},
+  "detection": {
+    "syntax": "sample",
+    "flavor": "sample",
+    "customization_id": "sample"
+  },
+  "source": "sample"
+}

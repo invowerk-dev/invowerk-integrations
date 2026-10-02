@@ -1,0 +1,33 @@
+identity:
+  author: "podshalocef"
+  name: "invowerk"
+  label:
+    en_US: "invowerk"
+  description:
+    en_US: "Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRechnung, ZUGFeRD and Factur-X invoices into fields."
+  icon: "icon.svg"
+  tags:
+    - "productivity"
+    - "utilities"
+credentials_for_provider:
+  x_api_key:
+    type: "secret-input"
+    required: true
+    label:
+      en_US: "invowerk API key"
+    placeholder:
+      en_US: "Paste your invowerk API key"
+    help:
+      en_US: "Create an API key in your invowerk account"
+    url: "https://invowerk.dev/go/dify?to=/app/api-keys"
+tools:
+  - "tools/get_me.yaml"
+  - "tools/parse_invoice.yaml"
+  - "tools/convert_invoice.yaml"
+  - "tools/generate_invoice.yaml"
+  - "tools/explain_codes.yaml"
+  - "tools/render_invoice.yaml"
+  - "tools/validate_invoice.yaml"
+extra:
+  python:
+    source: "provider/invowerk.py"

@@ -1,0 +1,23 @@
+{
+  "properties": {
+    "connectionParameters": {
+      "api_key": {
+        "type": "securestring",
+        "uiDefinition": {
+          "displayName": "API key",
+          "description": "Your invowerk API key. Create one at https://invowerk.dev/go/copilot-studio?to=/app/api-keys.",
+          "tooltip": "Create an invowerk API key at https://invowerk.dev/go/copilot-studio?to=/app/api-keys.",
+          "constraints": {
+            "tabIndex": 2,
+            "clearText": false,
+            "required": "true"
+          }
+        }
+      }
+    },
+    "iconBrandColor": "#008251",
+    "capabilities": [],
+    "publisher": "Podshalocef",
+    "stackOwner": "Podshalocef"
+  }
+}
