@@ -3,7 +3,7 @@
   "info": {
     "title": "invowerk MCP",
     "description": "German e-invoice checker: ZUGFeRD/Factur-X PDFs incl. PDF/A, XRechnung via the KoSIT validator, Peppol BIS. Free web tool, API, MCP.",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "contact": {
       "name": "invowerk support",
       "url": "https://invowerk.dev/support",

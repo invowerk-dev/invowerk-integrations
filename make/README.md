@@ -2,7 +2,7 @@
 
 Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRechnung, ZUGFeRD and Factur-X invoices into fields.
 
-The [invowerk](https://invowerk.dev) custom app for Make, version 1.0.1,
+The [invowerk](https://invowerk.dev) custom app for Make, version 1.0.2,
 generated from the API's [OpenAPI document](../openapi.json). Connect it with
 an API key: [create one](https://invowerk.dev/go/make?to=/app/api-keys).
 
