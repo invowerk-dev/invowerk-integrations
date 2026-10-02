@@ -1,0 +1,20 @@
+{
+  "node": "@invowerk-dev/n8n-nodes-invowerk.invowerk",
+  "nodeVersion": "1.0",
+  "codexVersion": "1.0",
+  "categories": [
+    "Utility"
+  ],
+  "resources": {
+    "credentialDocumentation": [
+      {
+        "url": "https://invowerk.dev/go/n8n?to=/app/api-keys"
+      }
+    ],
+    "primaryDocumentation": [
+      {
+        "url": "https://github.com/invowerk-dev/invowerk-integrations/tree/main/n8n"
+      }
+    ]
+  }
+}

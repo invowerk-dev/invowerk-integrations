@@ -1,0 +1,54 @@
+{
+  "name": "@invowerk-dev/n8n-nodes-invowerk",
+  "version": "1.0.0",
+  "description": "Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRechnung, ZUGFeRD and Factur-X invoices into fields.",
+  "license": "MIT",
+  "homepage": "https://invowerk.dev",
+  "keywords": [
+    "n8n-community-node-package",
+    "n8n",
+    "invowerk"
+  ],
+  "author": {
+    "name": "podshalocef",
+    "email": "contact@podshalocef.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/invowerk-dev/invowerk-integrations.git",
+    "directory": "n8n"
+  },
+  "scripts": {
+    "build": "n8n-node build",
+    "lint": "n8n-node lint",
+    "lint:fix": "n8n-node lint --fix",
+    "release": "n8n-node release",
+    "prepublishOnly": "n8n-node prerelease"
+  },
+  "files": [
+    "dist"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "n8n": {
+    "n8nNodesApiVersion": 1,
+    "strict": true,
+    "credentials": [
+      "dist/credentials/InvowerkApi.credentials.js"
+    ],
+    "nodes": [
+      "dist/nodes/Invowerk/Invowerk.node.js"
+    ]
+  },
+  "devDependencies": {
+    "@n8n/node-cli": "0.50.4",
+    "eslint": "9.39.4",
+    "prettier": "3.8.3",
+    "release-it": "20.2.0",
+    "typescript": "5.9.3"
+  },
+  "peerDependencies": {
+    "n8n-workflow": "*"
+  }
+}
