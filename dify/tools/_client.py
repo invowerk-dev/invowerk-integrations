@@ -10,7 +10,7 @@ import httpx
 BASE_URL = 'https://api.invowerk.dev'
 AUTH_HEADER = 'X-API-Key'
 CREDENTIAL = 'x_api_key'
-USER_AGENT = 'invowerk-dify/1.0.2'
+USER_AGENT = 'invowerk-dify/1.0.3'
 TIMEOUT = 240
 TITLE = 'invowerk'
 

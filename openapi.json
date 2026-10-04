@@ -1002,7 +1002,7 @@
               }
             ],
             "title": "Explain Url",
-            "description": "Path of the German explanation page /codes/<CODE>, if invowerk has one."
+            "description": "Path of the explanation page /codes/<CODE> (/en/codes/<CODE> in English), if invowerk has one."
           },
           "explain": {
             "anyOf": [
@@ -1026,7 +1026,7 @@
           "message"
         ],
         "title": "Finding",
-        "description": "One problem found in the invoice.\n\n``error_class`` says where the problem is: in the file or XML structure\n(``format``), in a rule of the applied rule set (``business_rules``) or in\nthe PDF around the invoice data (``carrier``). ``explain_url`` links the\nGerman explanation page for the code. ``explain`` holds the explanation\nitself when you call with ``?explain=true``."
+        "description": "One problem found in the invoice.\n\n``error_class`` says where the problem is: in the file or XML structure\n(``format``), in a rule of the applied rule set (``business_rules``) or in\nthe PDF around the invoice data (``carrier``). ``explain_url`` links the\nexplanation page for the code, in ``lang``. ``explain`` holds the explanation\nitself when you call with ``?explain=true``."
       },
       "Flavor": {
         "type": "string",
@@ -1275,7 +1275,7 @@
               }
             ],
             "title": "Explain Url",
-            "description": "Path of the German page /codes/<CODE> that explains the hint."
+            "description": "Path of the page /codes/<CODE> (/en/… in English) that explains the hint."
           }
         },
         "type": "object",
@@ -1657,7 +1657,7 @@
           "explain_url": {
             "type": "string",
             "title": "Explain Url",
-            "description": "Path of the German explanation page /codes/<CODE>."
+            "description": "Path of the explanation page: /codes/<CODE>, /en/codes/<CODE> in English."
           }
         },
         "type": "object",
@@ -1675,7 +1675,7 @@
           "explain_url"
         ],
         "title": "RuleExplanation",
-        "description": "The explanation of one rule code in the requested language.\n\nIt explains the format rule and how to fix the invoice data. It is not tax\nadvice. ``explain_url`` links the German page for the code."
+        "description": "The explanation of one rule code in the requested language.\n\nIt explains the format rule and how to fix the invoice data. It is not tax\nadvice. ``explain_url`` links the page for the code in the same language."
       },
       "ScenarioInfo": {
         "properties": {
