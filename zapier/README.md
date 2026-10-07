@@ -4,7 +4,7 @@ Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRech
 
 invowerk creates and reads e-invoices. Generate turns invoice data, keyed on EN 16931 Business Terms, into XRechnung or EN 16931 XML in UBL or CII. Amounts are written as given, and invowerk checks the result before returning it. Parse reads an incoming XML invoice or ZUGFeRD / Factur-X PDF into the same fields. Validate, render as HTML, convert between UBL and CII, and explain error codes are available too. Invoices are processed in memory, not stored. 500 free credits per month.
 
-The [invowerk](https://invowerk.dev) integration for Zapier, version 1.0.3,
+The [invowerk](https://invowerk.dev) integration for Zapier, version 1.0.4,
 generated from the API's [OpenAPI document](../openapi.json). Connect it with
 an API key: [create one](https://invowerk.dev/go/zapier?to=/app/api-keys).
 

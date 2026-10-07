@@ -1,6 +1,6 @@
 {
   "name": "invowerk-zapier",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRechnung, ZUGFeRD and Factur-X invoices into fields.",
   "homepage": "https://invowerk.dev",
   "author": "podshalocef <contact@podshalocef.com>",
