@@ -13,6 +13,7 @@ Official integrations for the [invowerk API](https://invowerk.dev), generated fr
 ## Integrations
 
 - **n8n** — community node [`@invowerk-dev/n8n-nodes-invowerk`](https://www.npmjs.com/package/@invowerk-dev/n8n-nodes-invowerk), install it under Settings → Community Nodes
+- **Dify** — [`podshalocef/invowerk`](https://marketplace.dify.ai/plugin/podshalocef/invowerk) on the Dify Marketplace
 - **Python SDK** — `pip install invowerk` · [PyPI](https://pypi.org/project/invowerk/)
 - **TypeScript SDK** — `npm install @invowerk-dev/sdk` · [npm](https://www.npmjs.com/package/@invowerk-dev/sdk)
 - **GitHub Action** — [`invowerk-dev/invowerk-action`](https://github.com/marketplace/actions/invowerk-api) on the GitHub Marketplace
