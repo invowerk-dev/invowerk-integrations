@@ -1,6 +1,6 @@
 {
   "name": "@invowerk-dev/n8n-nodes-invowerk",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRechnung, ZUGFeRD and Factur-X invoices into fields.",
   "license": "MIT",
   "homepage": "https://invowerk.dev",
@@ -42,7 +42,7 @@
     ]
   },
   "devDependencies": {
-    "@n8n/node-cli": "0.50.4",
+    "@n8n/node-cli": "0.51.1",
     "eslint": "9.39.4",
     "prettier": "3.8.3",
     "release-it": "20.2.0",
