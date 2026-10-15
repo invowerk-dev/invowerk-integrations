@@ -60,6 +60,41 @@ const REQUEST = {
       "type": "string"
     },
     {
+      "name": "payment_terms",
+      "location": "json",
+      "type": "string"
+    },
+    {
+      "name": "notes",
+      "location": "json",
+      "type": "array"
+    },
+    {
+      "name": "delivery_date",
+      "location": "json",
+      "type": "string"
+    },
+    {
+      "name": "delivery_period_start",
+      "location": "json",
+      "type": "string"
+    },
+    {
+      "name": "delivery_period_end",
+      "location": "json",
+      "type": "string"
+    },
+    {
+      "name": "deliver_to",
+      "location": "json",
+      "type": "object"
+    },
+    {
+      "name": "preceding_invoices",
+      "location": "json",
+      "type": "array"
+    },
+    {
       "name": "seller",
       "location": "json",
       "type": "object"
@@ -154,7 +189,7 @@ const DEFINITION = {
         "label": "Invoice type code",
         "required": false,
         "type": "string",
-        "helpText": "Invoice type code from UNTDID 1001; '380' is a commercial invoice (BT-3).",
+        "helpText": "Invoice type code from UNTDID 1001 (BT-3): '380' commercial invoice, '326' partial invoice, '381' credit note (syntax 'cii' only), '384' corrected invoice, '389' self-billed invoice, '875'/'876'/'877' partial, partial final and final construction invoice.",
         "default": "380"
       },
       {
@@ -176,7 +211,56 @@ const DEFINITION = {
         "label": "Payment iban",
         "required": false,
         "type": "string",
-        "helpText": "IBAN of the payee account for a bank transfer (BT-84)."
+        "helpText": "IBAN of the payee account for a bank transfer (BT-84). Without it the invoice carries no payment instructions (BG-16). Required for flavor 'xrechnung' (BR-DE-1)."
+      },
+      {
+        "key": "payment_terms",
+        "label": "Payment terms",
+        "required": false,
+        "type": "string",
+        "helpText": "Payment terms as free text (BT-20)."
+      },
+      {
+        "key": "notes",
+        "label": "Notes",
+        "required": false,
+        "type": "text",
+        "helpText": "Free-text notes on the invoice as a whole, one entry per note (BT-22). (JSON)"
+      },
+      {
+        "key": "delivery_date",
+        "label": "Delivery date",
+        "required": false,
+        "type": "string",
+        "helpText": "Actual delivery date, 'YYYY-MM-DD' (BT-72). Defaults to the issue date unless a delivery period is given."
+      },
+      {
+        "key": "delivery_period_start",
+        "label": "Delivery period start",
+        "required": false,
+        "type": "string",
+        "helpText": "Start of the invoicing period, 'YYYY-MM-DD' (BT-73, BG-14), e.g. the period a service covers."
+      },
+      {
+        "key": "delivery_period_end",
+        "label": "Delivery period end",
+        "required": false,
+        "type": "string",
+        "helpText": "End of the invoicing period, 'YYYY-MM-DD' (BT-74, BG-14). Not before the start (BR-29)."
+      },
+      {
+        "key": "deliver_to",
+        "label": "Deliver to",
+        "required": false,
+        "type": "text",
+        "helpText": "Deliver-to address (BG-15): where the goods go or the service is performed. Needed for VAT category 'K', intra-community supply (BT-80, BR-IC-12). (JSON)"
+      },
+      {
+        "key": "preceding_invoices",
+        "label": "Preceding invoices",
+        "required": false,
+        "type": "text",
+        "helpText": "Earlier invoices this invoice refers to (BG-3), e.g. the invoice a corrected invoice (384) replaces. Syntax 'cii' carries at most one. (JSON)"
       },
       {
         "key": "seller",

@@ -2,7 +2,7 @@
   "openapi": "3.1.0",
   "info": {
     "title": "invowerk",
-    "description": "German e-invoice checker: ZUGFeRD/Factur-X PDFs incl. PDF/A, XRechnung via the KoSIT validator, Peppol BIS. Free web tool, API, MCP.\n\nBase URL: `https://api.invowerk.dev`.\n\n### Authentication\nSend your key in the `X-API-Key` header. Calls without a key run anonymously at\na lower rate limit per IP address.\n\n### Rate limits\nEvery response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and\n`X-RateLimit-Reset` (seconds until the window resets). Over-budget calls return\n`429` with a `Retry-After` header. Check your live budget at `GET /v1/me`.\n\n### Pagination\nList endpoints return a keyset envelope: `{\"items\": [...], \"next_cursor\": \"...\"}`.\nPass `next_cursor` back as the `?cursor=` query param for the next page; it is\n`null` on the last page.\n\n### Errors\nErrors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) `problem+json` with a\nstable machine-readable **`code`** (e.g. `rate_limited`, `credits_exhausted`,\n`validation_error`). Branch on `code`. The `title` and `detail` text may change.\n\n### Quickstart\n```sh\ncurl -H \"X-API-Key: $API_KEY\" https://api.invowerk.dev/v1/me\n```\n",
+    "description": "German e-invoices: create ZUGFeRD PDFs and XRechnung, check ZUGFeRD/Factur-X, XRechnung (KoSIT) and Peppol BIS. Free tool, API, MCP.\n\nBase URL: `https://api.invowerk.dev`.\n\n### Authentication\nSend your key in the `X-API-Key` header. Calls without a key run anonymously at\na lower rate limit per IP address.\n\n### Rate limits\nEvery response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and\n`X-RateLimit-Reset` (seconds until the window resets). Over-budget calls return\n`429` with a `Retry-After` header. Check your live budget at `GET /v1/me`.\n\n### Pagination\nList endpoints return a keyset envelope: `{\"items\": [...], \"next_cursor\": \"...\"}`.\nPass `next_cursor` back as the `?cursor=` query param for the next page; it is\n`null` on the last page.\n\n### Errors\nErrors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) `problem+json` with a\nstable machine-readable **`code`** (e.g. `rate_limited`, `credits_exhausted`,\n`validation_error`). Branch on `code`. The `title` and `detail` text may change.\n\n### Quickstart\n```sh\ncurl -H \"X-API-Key: $API_KEY\" https://api.invowerk.dev/v1/me\n```\n",
     "version": "1"
   },
   "servers": [
@@ -102,7 +102,7 @@
           "Transform"
         ],
         "summary": "Convert an e-invoice between UBL and CII",
-        "description": "Convert an e-invoice between UBL and CII.\n\nSend the invoice as for `POST /v1/parse`: XML or a ZUGFeRD / Factur-X PDF, raw\nbody or multipart file part, at most 20 MB. `target_syntax` is required (`ubl`\nor `cii`). `target_flavor` (`en16931` or `xrechnung`) is optional; without it\nthe flavor of the source is kept. invowerk checks the converted XML before\nanswering and never returns an invalid document. The answer is\n`application/xml`; `?format=json` returns `{xml, syntax, flavor,\nself_validation}`. Errors: 422 when the input cannot be read, with an error code\nat the start of `detail`; 500 when the converted XML fails the check (the\ncredits are refunded); 413, 429 and 504 as for `POST /v1/parse`. Costs 3\ncredits.\n\n**Credits:** 3 per call.",
+        "description": "Convert an e-invoice between UBL and CII.\n\nSend the invoice as for `POST /v1/parse`: XML or a ZUGFeRD / Factur-X PDF, raw\nbody or multipart file part, at most 20 MB. `target_syntax` is required (`ubl`\nor `cii`). `target_flavor` (`en16931` or `xrechnung`) is optional; without it\nthe flavor of the source is kept. invowerk checks the converted XML before\nanswering and never returns an invalid document. The answer is\n`application/xml`; `?format=json` returns `{xml, syntax, flavor,\nself_validation}`. Errors: 422 when the input cannot be read or cannot be\nwritten in the target form (e.g. XRechnung paid by direct debit: invowerk writes\nonly SEPA credit transfer), with an error code at the start of `detail`; 500\nwhen the converted XML fails the check (the credits are refunded); 413, 429\nand 504 as for `POST /v1/parse`. Costs 3 credits.\n\n**Credits:** 3 per call.",
         "operationId": "convert_invoice",
         "security": [
           {
@@ -231,7 +231,7 @@
           "Generation"
         ],
         "summary": "Create an e-invoice from JSON",
-        "description": "Create an EN 16931 e-invoice from JSON.\n\nThe JSON body is keyed on EN 16931 Business Terms (BT-*). `syntax` selects UBL\n(default) or CII. `flavor` selects plain EN 16931 (default) or XRechnung, which\nrequires `buyer_reference` (BT-10, the Leitweg-ID). invowerk writes your\namounts as given. It does not compute or correct them. Before answering,\ninvowerk checks the generated XML and never returns an invalid document. The\nanswer is `application/xml`; `?format=json` returns\n`{xml, syntax, flavor, self_validation}`. Errors: 422 for invalid input, with\ndetails per field; 500 when the generated XML fails the check (the credits are\nrefunded); 429 when every slot is busy (callers without an API key share\none); 504 when it took longer than 20 s. Costs 5 credits.\n\n**Credits:** 5 per call.",
+        "description": "Create an EN 16931 e-invoice from JSON.\n\nThe JSON body is keyed on EN 16931 Business Terms (BT-*). `syntax` selects UBL\n(default) or CII. `flavor` selects plain EN 16931 (default) or XRechnung, which\nrequires `buyer_reference` (BT-10, the Leitweg-ID) and `payment_iban` (BT-84).\nA credit note (381) needs CII. The seller needs `identifier` (BT-29),\n`legal_registration_id` (BT-30) or `vat_id` (BT-31). invowerk writes your\namounts as given. It does not compute or correct them. Before answering,\ninvowerk checks the generated XML and never returns an invalid document. The\nanswer is `application/xml`; `?format=json` returns\n`{xml, syntax, flavor, self_validation}`. Errors: 422 for invalid input, with\ndetails per field or the rule it breaks; 500 when the generated XML fails the\ncheck (the credits are refunded); 429 when every slot is busy (callers without an API key share\none); 504 when it took longer than 20 s. Costs 5 credits.\n\n**Credits:** 5 per call.",
         "operationId": "generate_invoice",
         "security": [
           {
@@ -604,6 +604,18 @@
             "$ref": "#/components/schemas/PostalAddress",
             "description": "Buyer postal address (BG-8)."
           },
+          "vat_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vat Id",
+            "description": "Buyer VAT ID, e.g. 'ATU12345678' (BT-48). Needed on lines with VAT category 'AE' (BR-AE-02) or 'K' (BR-IC-02)."
+          },
           "electronic_address": {
             "anyOf": [
               {
@@ -770,6 +782,22 @@
             "title": "Tax Inclusive",
             "description": "Invoice total with VAT (BT-112)."
           },
+          "prepaid": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string",
+                "pattern": "^(?!^[-+.]*$)[+-]?0*\\d*\\.?\\d*$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prepaid",
+            "description": "Amount already paid, e.g. the sum of earlier partial invoices on a final invoice (BT-113)."
+          },
           "payable": {
             "anyOf": [
               {
@@ -784,7 +812,7 @@
               }
             ],
             "title": "Payable",
-            "description": "Amount due for payment (BT-115). Defaults to the total with VAT."
+            "description": "Amount due for payment (BT-115). Defaults to the total with VAT minus the paid amount (BT-112 − BT-113)."
           }
         },
         "type": "object",
@@ -987,6 +1015,18 @@
             ],
             "title": "Explain",
             "description": "Explanation of the rule (meaning, causes, fixes) in the requested language. Set only with ?explain=true and if invowerk has an entry for the code."
+          },
+          "printed_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Printed By",
+            "description": "Set only on 'no_embedded_xml': the browser or printer that saved the PDF through a print function, for example 'Firefox', 'Chrome' or 'Microsoft Print to PDF'. Printing drops the embedded invoice XML, so the original file may still be an e-invoice."
           }
         },
         "type": "object",
@@ -997,7 +1037,7 @@
           "message"
         ],
         "title": "Finding",
-        "description": "One problem found in the invoice.\n\n``error_class`` says where the problem is: in the file or XML structure\n(``format``), in a rule of the applied rule set (``business_rules``) or in\nthe PDF around the invoice data (``carrier``). ``explain_url`` links the\nexplanation page for the code, in ``lang``. ``explain`` holds the explanation\nitself when you call with ``?explain=true``."
+        "description": "One problem found in the invoice.\n\n``error_class`` says where the problem is: in the file or XML structure\n(``format``), in a rule of the applied rule set (``business_rules``) or in\nthe PDF around the invoice data (``carrier``). ``explain_url`` links the\nexplanation page for the code, in ``lang``. ``explain`` holds the explanation\nitself when you call with ``?explain=true``. ``printed_by`` names the\nbrowser or printer when a ``no_embedded_xml`` PDF was saved through a print\nfunction."
       },
       "Flavor": {
         "type": "string",
@@ -1041,7 +1081,7 @@
           "invoice_type_code": {
             "type": "string",
             "title": "Invoice Type Code",
-            "description": "Invoice type code from UNTDID 1001; '380' is a commercial invoice (BT-3).",
+            "description": "Invoice type code from UNTDID 1001 (BT-3): '380' commercial invoice, '326' partial invoice, '381' credit note (syntax 'cii' only), '384' corrected invoice, '389' self-billed invoice, '875'/'876'/'877' partial, partial final and final construction invoice.",
             "default": "380"
           },
           "buyer_reference": {
@@ -1078,7 +1118,82 @@
               }
             ],
             "title": "Payment Iban",
-            "description": "IBAN of the payee account for a bank transfer (BT-84)."
+            "description": "IBAN of the payee account for a bank transfer (BT-84). Without it the invoice carries no payment instructions (BG-16). Required for flavor 'xrechnung' (BR-DE-1)."
+          },
+          "payment_terms": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Payment Terms",
+            "description": "Payment terms as free text (BT-20)."
+          },
+          "notes": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Notes",
+            "description": "Free-text notes on the invoice as a whole, one entry per note (BT-22)."
+          },
+          "delivery_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Date",
+            "description": "Actual delivery date, 'YYYY-MM-DD' (BT-72). Defaults to the issue date unless a delivery period is given."
+          },
+          "delivery_period_start": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Period Start",
+            "description": "Start of the invoicing period, 'YYYY-MM-DD' (BT-73, BG-14), e.g. the period a service covers."
+          },
+          "delivery_period_end": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Delivery Period End",
+            "description": "End of the invoicing period, 'YYYY-MM-DD' (BT-74, BG-14). Not before the start (BR-29)."
+          },
+          "deliver_to": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PostalAddress"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Deliver-to address (BG-15): where the goods go or the service is performed. Needed for VAT category 'K', intra-community supply (BT-80, BR-IC-12)."
+          },
+          "preceding_invoices": {
+            "items": {
+              "$ref": "#/components/schemas/PrecedingInvoice"
+            },
+            "type": "array",
+            "title": "Preceding Invoices",
+            "description": "Earlier invoices this invoice refers to (BG-3), e.g. the invoice a corrected invoice (384) replaces. Syntax 'cii' carries at most one."
           },
           "seller": {
             "$ref": "#/components/schemas/Seller"
@@ -1449,6 +1564,18 @@
       },
       "PostalAddress": {
         "properties": {
+          "line_one": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line One",
+            "description": "Address line 1, usually street and house number (BT-35 seller, BT-50 buyer, BT-75 deliver-to)."
+          },
           "city": {
             "anyOf": [
               {
@@ -1486,7 +1613,34 @@
           "country_code"
         ],
         "title": "PostalAddress",
-        "description": "A postal address (BG-5 seller, BG-8 buyer).\n\nEN 16931 requires only the country. XRechnung also requires city and post\ncode for the seller. invowerk does not check that the address exists."
+        "description": "A postal address (BG-5 seller, BG-8 buyer, BG-15 deliver-to).\n\nEN 16931 requires only the country. XRechnung also requires city and post\ncode for the seller. invowerk does not check that the address exists."
+      },
+      "PrecedingInvoice": {
+        "properties": {
+          "number": {
+            "type": "string",
+            "title": "Number",
+            "description": "Number of the earlier invoice (BT-25)."
+          },
+          "issue_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Issue Date",
+            "description": "Issue date of the earlier invoice, 'YYYY-MM-DD' (BT-26)."
+          }
+        },
+        "type": "object",
+        "required": [
+          "number"
+        ],
+        "title": "PrecedingInvoice",
+        "description": "A reference to an earlier invoice (BG-3), e.g. the invoice a corrected invoice\n(384) replaces, or a partial invoice a final invoice (877) settles."
       },
       "RateLimitInfo": {
         "properties": {
@@ -1719,6 +1873,66 @@
             "title": "Vat Id",
             "description": "Seller VAT ID, e.g. 'DE123456789' (BT-31). Needed when a line has VAT category 'S' (BR-S-02)."
           },
+          "tax_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tax Number",
+            "description": "Seller tax registration identifier, e.g. a German Steuernummer '123/456/78901' (BT-32). Written with scheme 'FC'."
+          },
+          "identifier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier",
+            "description": "Seller identifier, e.g. a GLN or an ID the buyer knows the seller by (BT-29). An invoice needs BT-29, BT-30 or BT-31 (BR-CO-26)."
+          },
+          "identifier_scheme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Identifier Scheme",
+            "description": "Scheme of the seller identifier, an ISO/IEC 6523 ICD code, e.g. '0088' for a GLN (BT-29-1). Leave empty for an identifier without a scheme."
+          },
+          "legal_registration_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Registration Id",
+            "description": "Seller legal registration identifier, e.g. a Handelsregisternummer 'HRB 12345' (BT-30). An invoice needs BT-29, BT-30 or BT-31 (BR-CO-26)."
+          },
+          "legal_registration_scheme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Legal Registration Scheme",
+            "description": "Scheme of the legal registration identifier, an ISO/IEC 6523 ICD code (BT-30-1). Leave empty for an identifier without a scheme."
+          },
           "contact_name": {
             "anyOf": [
               {
@@ -1832,6 +2046,30 @@
             "title": "Rate",
             "description": "VAT rate of the category in percent (BT-119).",
             "default": "19.00"
+          },
+          "exemption_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exemption Reason",
+            "description": "VAT exemption reason as text (BT-120). The rules require it or its code for categories such as 'E', 'AE', 'K', 'G' (e.g. BR-E-10)."
+          },
+          "exemption_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exemption Reason Code",
+            "description": "VAT exemption reason code from the VATEX code list, e.g. 'VATEX-EU-AE' (BT-121)."
           }
         },
         "type": "object",

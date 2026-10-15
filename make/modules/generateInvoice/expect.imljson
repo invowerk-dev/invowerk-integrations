@@ -69,7 +69,7 @@
     "label": "Invoice type code",
     "required": false,
     "type": "text",
-    "help": "Invoice type code from UNTDID 1001; '380' is a commercial invoice (BT-3).",
+    "help": "Invoice type code from UNTDID 1001 (BT-3): '380' commercial invoice, '326' partial invoice, '381' credit note (syntax 'cii' only), '384' corrected invoice, '389' self-billed invoice, '875'/'876'/'877' partial, partial final and final construction invoice.",
     "default": "380"
   },
   {
@@ -91,7 +91,56 @@
     "label": "Payment iban",
     "required": false,
     "type": "text",
-    "help": "IBAN of the payee account for a bank transfer (BT-84)."
+    "help": "IBAN of the payee account for a bank transfer (BT-84). Without it the invoice carries no payment instructions (BG-16). Required for flavor 'xrechnung' (BR-DE-1)."
+  },
+  {
+    "name": "payment_terms",
+    "label": "Payment terms",
+    "required": false,
+    "type": "text",
+    "help": "Payment terms as free text (BT-20)."
+  },
+  {
+    "name": "notes",
+    "label": "Notes",
+    "required": false,
+    "type": "json",
+    "help": "Free-text notes on the invoice as a whole, one entry per note (BT-22). (JSON)"
+  },
+  {
+    "name": "delivery_date",
+    "label": "Delivery date",
+    "required": false,
+    "type": "text",
+    "help": "Actual delivery date, 'YYYY-MM-DD' (BT-72). Defaults to the issue date unless a delivery period is given."
+  },
+  {
+    "name": "delivery_period_start",
+    "label": "Delivery period start",
+    "required": false,
+    "type": "text",
+    "help": "Start of the invoicing period, 'YYYY-MM-DD' (BT-73, BG-14), e.g. the period a service covers."
+  },
+  {
+    "name": "delivery_period_end",
+    "label": "Delivery period end",
+    "required": false,
+    "type": "text",
+    "help": "End of the invoicing period, 'YYYY-MM-DD' (BT-74, BG-14). Not before the start (BR-29)."
+  },
+  {
+    "name": "deliver_to",
+    "label": "Deliver to",
+    "required": false,
+    "type": "json",
+    "help": "Deliver-to address (BG-15): where the goods go or the service is performed. Needed for VAT category 'K', intra-community supply (BT-80, BR-IC-12). (JSON)"
+  },
+  {
+    "name": "preceding_invoices",
+    "label": "Preceding invoices",
+    "required": false,
+    "type": "json",
+    "help": "Earlier invoices this invoice refers to (BG-3), e.g. the invoice a corrected invoice (384) replaces. Syntax 'cii' carries at most one. (JSON)"
   },
   {
     "name": "seller",

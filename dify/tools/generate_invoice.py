@@ -64,6 +64,41 @@ OPERATION = {
             "type": "string"
         },
         {
+            "name": "payment_terms",
+            "location": "json",
+            "type": "string"
+        },
+        {
+            "name": "notes",
+            "location": "json",
+            "type": "array"
+        },
+        {
+            "name": "delivery_date",
+            "location": "json",
+            "type": "string"
+        },
+        {
+            "name": "delivery_period_start",
+            "location": "json",
+            "type": "string"
+        },
+        {
+            "name": "delivery_period_end",
+            "location": "json",
+            "type": "string"
+        },
+        {
+            "name": "deliver_to",
+            "location": "json",
+            "type": "object"
+        },
+        {
+            "name": "preceding_invoices",
+            "location": "json",
+            "type": "array"
+        },
+        {
             "name": "seller",
             "location": "json",
             "type": "object"
