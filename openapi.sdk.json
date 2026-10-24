@@ -231,7 +231,7 @@
           "Generation"
         ],
         "summary": "Create an e-invoice from JSON",
-        "description": "Create an EN 16931 e-invoice from JSON.\n\nThe JSON body is keyed on EN 16931 Business Terms (BT-*). `syntax` selects UBL\n(default) or CII. `flavor` selects plain EN 16931 (default) or XRechnung, which\nrequires `buyer_reference` (BT-10, the Leitweg-ID) and `payment_iban` (BT-84).\nA credit note (381) needs CII. The seller needs `identifier` (BT-29),\n`legal_registration_id` (BT-30) or `vat_id` (BT-31). invowerk writes your\namounts as given. It does not compute or correct them. Before answering,\ninvowerk checks the generated XML and never returns an invalid document. The\nanswer is `application/xml`; `?format=json` returns\n`{xml, syntax, flavor, self_validation}`. Errors: 422 for invalid input, with\ndetails per field or the rule it breaks; 500 when the generated XML fails the\ncheck (the credits are refunded); 429 when every slot is busy (callers without an API key share\none); 504 when it took longer than 20 s. Costs 5 credits.\n\n**Credits:** 5 per call.",
+        "description": "Create an EN 16931 e-invoice from JSON.\n\nThe JSON body is keyed on EN 16931 Business Terms (BT-*). `syntax` selects UBL\n(default) or CII. `flavor` selects plain EN 16931 (default) or XRechnung, which\nrequires `buyer_reference` (BT-10, the Leitweg-ID) and `payment_iban` (BT-84).\nA credit note (381) needs CII. The seller needs `identifier` (BT-29),\n`legal_registration_id` (BT-30) or `vat_id` (BT-31). invowerk writes your\namounts as given, with 2 decimals. It does not compute or correct them.\nInput that breaks an EN 16931 or XRechnung rule is a 422 naming each rule,\ne.g. BT-112 = BT-109 + BT-110 (BR-CO-15). Dates are YYYY-MM-DD, amounts go\nup to 999,999,999.99. Before answering, invowerk checks\nthe generated XML and never returns an invalid document. The answer is\n`application/xml`; `?format=json` returns `{xml, syntax, flavor,\nself_validation}`. Errors: 422 for invalid input, with details per field or\nthe rule it breaks; 500 when the generated XML still fails the check (the\ncredits are refunded); 429 when every slot is busy (callers without an API key\nshare one); 504 when it took longer than 20 s. Costs 5 credits.\n\n**Credits:** 5 per call.",
         "operationId": "generate_invoice",
         "security": [
           {
@@ -287,7 +287,7 @@
             }
           },
           "500": {
-            "description": "The generated XML failed invowerk's own check. No document is returned and the credits are refunded.",
+            "description": "The generated XML failed invowerk's own check. No document is returned and the credits are refunded. Input that breaks a rule is a 422, not a 500.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -767,7 +767,7 @@
               }
             ],
             "title": "Tax Exclusive",
-            "description": "Invoice total without VAT (BT-109)."
+            "description": "Invoice total without VAT (BT-109). invowerk writes no document-level allowances or charges, so to generate, it must equal the line total (BR-CO-13)."
           },
           "tax_inclusive": {
             "anyOf": [
@@ -780,7 +780,7 @@
               }
             ],
             "title": "Tax Inclusive",
-            "description": "Invoice total with VAT (BT-112)."
+            "description": "Invoice total with VAT (BT-112): the total without VAT plus the sum of the VAT breakdown amounts (BR-CO-15)."
           },
           "prepaid": {
             "anyOf": [
@@ -1235,7 +1235,7 @@
           "totals"
         ],
         "title": "GenerateRequest",
-        "description": "The request body of POST /v1/generate: an EN 16931 invoice, keyed on\nBusiness Terms (BT-*).\n\nAll amounts are your own figures. invowerk writes them into the XML and\nchecks the result against EN 16931 (and XRechnung, if selected). It does not\ncompute or correct them.",
+        "description": "The request body of POST /v1/generate: an EN 16931 invoice, keyed on\nBusiness Terms (BT-*).\n\nAll amounts are your own figures. invowerk writes them into the XML and\nchecks the result against EN 16931 (and XRechnung, if selected). It does not\ncompute or correct them. Input that breaks an EN 16931 or XRechnung rule is\nrefused (HTTP 422), each rule named. Dates are YYYY-MM-DD, amounts go up to\n999,999,999.99.",
         "examples": [
           {
             "buyer": {
@@ -1442,7 +1442,7 @@
               }
             ],
             "title": "Tax Rate",
-            "description": "VAT rate of the line in percent, e.g. 19.00 (BT-152).",
+            "description": "VAT rate of the line in percent, e.g. 19.00 (BT-152). Not written for category 'O', not subject to VAT (BR-O-05).",
             "default": "19.00"
           }
         },
