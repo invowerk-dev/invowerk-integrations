@@ -3,7 +3,7 @@
   "info": {
     "title": "invowerk MCP",
     "description": "German e-invoices: create ZUGFeRD PDFs and XRechnung, check ZUGFeRD/Factur-X, XRechnung (KoSIT) and Peppol BIS. Free tool, API, MCP.",
-    "version": "1.0.11",
+    "version": "1.0.12",
     "contact": {
       "name": "invowerk support",
       "url": "https://invowerk.dev/support",
