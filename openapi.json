@@ -1216,6 +1216,54 @@
             ],
             "description": "Deliver-to address (BG-15): where the goods go or the service is performed. Needed for VAT category 'K', intra-community supply (BT-80, BR-IC-12)."
           },
+          "deliver_to_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deliver To Name",
+            "description": "Name of the party the goods or services are delivered to (BT-70)."
+          },
+          "deliver_to_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deliver To Id",
+            "description": "Identifier of the delivery location, e.g. a GLN (BT-71)."
+          },
+          "deliver_to_id_scheme": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deliver To Id Scheme",
+            "description": "Scheme of 'deliver_to_id', an ISO/IEC 6523 ICD code, e.g. '0088' for a GLN (BT-71-1). Without it the identifier is written without a scheme."
+          },
+          "order_reference": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Order Reference",
+            "description": "Purchase order reference: the buyer's order number (BT-13)."
+          },
           "preceding_invoices": {
             "items": {
               "$ref": "#/components/schemas/PrecedingInvoice"

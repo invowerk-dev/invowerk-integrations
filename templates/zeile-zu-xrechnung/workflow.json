@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Sheet row to XRechnung by email\nEach new row in your invoice sheet becomes an XRechnung (UBL XML), checked against the EN 16931 and XRechnung rules by invowerk, and is emailed to the buyer as an attachment.\n\n### Setup\n1. Install the community node `@invowerk-dev/n8n-nodes-invowerk`.\n2. Get an API key: https://invowerk.dev/go/tpl-zeile-zu-xrechnung?to=/app/api-keys\n3. Create the sheet with these header columns: `invoice_number`, `issue_date`, `due_date`, `buyer_reference`, `buyer_name`, `buyer_city`, `buyer_post_code`, `buyer_country`, `buyer_email`, `item`, `quantity`, `unit_price`, `vat_rate`.\n4. Pick the sheet in **New invoice row**, edit `SELLER` in **Build invoice body**, connect Gmail.\n\nThe trigger carries one pinned sample row: run the workflow once (without the email step) to see the result.",
-        "height": 520,
+        "content": "## Sheet row to XRechnung by email\nEach new row in your invoice sheet becomes an XRechnung (UBL XML), checked against the EN 16931 and XRechnung rules by invowerk, and is emailed to the buyer as an attachment.\n\nEvery node ships with n8n, so the workflow runs on n8n Cloud and self-hosted n8n.\n\n### Setup\n1. Get an API key: https://invowerk.dev/go/tpl-zeile-zu-xrechnung?to=/app/api-keys\n2. In **Generate XRechnung**, create a **Header Auth** credential: name `X-API-Key`, value your API key.\n3. Create the sheet with these header columns: `invoice_number`, `issue_date`, `due_date`, `buyer_reference`, `buyer_name`, `buyer_city`, `buyer_post_code`, `buyer_country`, `buyer_email`, `item`, `quantity`, `unit_price`, `vat_rate`.\n4. Pick the sheet in **New invoice row**, edit `SELLER` in **Build invoice body**, connect Gmail.\n\nThe trigger carries one pinned sample row: run the workflow once (without the email step) to see the result.",
+        "height": 620,
         "width": 460
       },
       "id": "89e3d44a-7cb5-57a1-803c-d56002345e49",
@@ -13,7 +13,7 @@
       "typeVersion": 1,
       "position": [
         -560,
-        -380
+        -480
       ]
     },
     {
@@ -34,8 +34,8 @@
     },
     {
       "parameters": {
-        "content": "### invowerk: Generate Invoice\nFlavor `xrechnung`, syntax `ubl`. invowerk checks the XML it built; an invoice that breaks a rule is never returned, the node fails instead.",
-        "height": 220,
+        "content": "### Generate XRechnung\nAn HTTP Request node: `POST https://api.invowerk.dev/v1/generate` with flavor `xrechnung` and syntax `ubl`. The XML comes back as text in `data`. invowerk checks the XML it built; an invoice that breaks a rule is never returned, the node fails instead.",
+        "height": 260,
         "width": 300,
         "color": 4
       },
@@ -45,7 +45,7 @@
       "typeVersion": 1,
       "position": [
         300,
-        -260
+        -300
       ]
     },
     {
@@ -95,28 +95,26 @@
     },
     {
       "parameters": {
-        "resource": "invowerk",
-        "operation": "generate_invoice",
-        "invoiceNumber": "={{ $json.invoice_number }}",
-        "issueDate": "={{ $json.issue_date }}",
-        "seller": "={{ JSON.stringify($json.seller) }}",
-        "buyer": "={{ JSON.stringify($json.buyer) }}",
-        "lines": "={{ JSON.stringify($json.lines) }}",
-        "taxBreakdown": "={{ JSON.stringify($json.tax_breakdown) }}",
-        "totals": "={{ JSON.stringify($json.totals) }}",
-        "additionalFields": {
-          "flavor": "xrechnung",
-          "syntax": "ubl",
-          "buyerReference": "={{ $json.buyer_reference }}",
-          "dueDate": "={{ $json.due_date }}",
-          "paymentIban": "={{ $json.payment_iban }}",
-          "currency": "EUR"
+        "method": "POST",
+        "url": "https://api.invowerk.dev/v1/generate",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({\n  flavor: 'xrechnung',\n  syntax: 'ubl',\n  currency: 'EUR',\n  invoice_number: $json.invoice_number,\n  issue_date: $json.issue_date,\n  due_date: $json.due_date || undefined,\n  buyer_reference: $json.buyer_reference || undefined,\n  payment_iban: $json.payment_iban,\n  seller: $json.seller,\n  buyer: $json.buyer,\n  lines: $json.lines,\n  tax_breakdown: $json.tax_breakdown,\n  totals: $json.totals\n}) }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
         }
       },
       "id": "8486c3c4-017f-50f0-86a5-6030bc1d4a1e",
       "name": "Generate XRechnung",
-      "type": "@invowerk-dev/n8n-nodes-invowerk.invowerk",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
       "position": [
         80,
         0
@@ -125,7 +123,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// The node returns the XRechnung as text in `data`; turn it into an XML file.\nconst invoice = $('Build invoice body').item.json;\nreturn {\n  json: { invoice_number: invoice.invoice_number, buyer_email: invoice.buyer_email },\n  binary: {\n    invoice: {\n      data: Buffer.from($json.data, 'utf8').toString('base64'),\n      mimeType: 'application/xml',\n      fileName: `${invoice.invoice_number}.xml`,\n      fileExtension: 'xml',\n    },\n  },\n};"
+        "jsCode": "// Generate XRechnung returns the XRechnung as text in `data`; turn it into an XML file.\nconst invoice = $('Build invoice body').item.json;\nreturn {\n  json: { invoice_number: invoice.invoice_number, buyer_email: invoice.buyer_email },\n  binary: {\n    invoice: {\n      data: Buffer.from($json.data, 'utf8').toString('base64'),\n      mimeType: 'application/xml',\n      fileName: `${invoice.invoice_number}.xml`,\n      fileExtension: 'xml',\n    },\n  },\n};"
       },
       "id": "8fb4cad0-12b8-5e6f-8885-6418ea8bffbf",
       "name": "Attach as XML file",

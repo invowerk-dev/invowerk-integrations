@@ -5,7 +5,9 @@ and emails it to the buyer. invowerk builds the XML (UBL syntax, XRechnung
 rules) and checks it before it is returned.
 
 Use it when you write invoices as rows in Google Sheets (or Airtable) and a
-buyer, often a public authority, asks for an XRechnung instead of a PDF.
+buyer, often a public authority, asks for an XRechnung instead of a PDF. Every
+node ships with n8n, so the workflow runs on n8n Cloud and on a self-hosted
+n8n.
 
 ## Flow
 
@@ -13,21 +15,22 @@ buyer, often a public authority, asks for an XRechnung instead of a PDF.
 2. **Build invoice body** (Code): maps the row and your fixed seller details to
    the `generate_invoice` fields and computes the line total, the VAT and the
    invoice totals.
-3. **Generate XRechnung** (invowerk, Generate Invoice): flavor `xrechnung`,
-   syntax `ubl`. invowerk checks the XML it built: an invoice that breaks an
-   EN 16931 or XRechnung rule is never returned, the node fails instead.
-   Missing or malformed fields come back as an error naming the field.
+3. **Generate XRechnung** (HTTP Request, `POST https://api.invowerk.dev/v1/generate`):
+   sends those fields as JSON with flavor `xrechnung` and syntax `ubl`, and
+   gets the XML back as text. invowerk checks the XML it built: an invoice
+   that breaks an EN 16931 or XRechnung rule is never returned, the node fails
+   instead. Missing or malformed fields come back as an error naming the field.
 4. **Attach as XML file** (Code): turns the XML text into an `<invoice number>.xml`
    file.
 5. **Email the invoice** (Gmail): sends it to the buyer's address from the row.
 
 ## Setup
 
-1. Install the community node `@invowerk-dev/n8n-nodes-invowerk`
-   (Settings > Community Nodes) and import `workflow.json`.
+1. Import `workflow.json` into n8n (Cloud, or self-hosted 2.33 or later).
 2. Get an API key at
-   <https://invowerk.dev/go/tpl-zeile-zu-xrechnung?to=/app/api-keys> and add it
-   as the invowerk credential.
+   <https://invowerk.dev/go/tpl-zeile-zu-xrechnung?to=/app/api-keys>. In
+   **Generate XRechnung**, create a **Header Auth** credential with the name
+   `X-API-Key` and your key as the value.
 3. Create a sheet whose first row holds these column names:
 
    | Column | Example | Business term |
@@ -56,6 +59,19 @@ The trigger carries one pinned sample row. Disable **Email the invoice** and run
 the workflow once to see the generated XML; its data matches invowerk's
 published `generate_invoice` example.
 
+## The HTTP Request node
+
+**Generate XRechnung** comes set up like this:
+
+- **Method** `POST`, **URL** `https://api.invowerk.dev/v1/generate`.
+- **Authentication** Generic Credential Type, **Generic Auth Type** Header Auth.
+- **Send Body** on, **Body Content Type** JSON, **Specify Body** "Using JSON":
+  an expression that takes the `generate_invoice` fields from **Build invoice
+  body** and adds `flavor`, `syntax` and `currency`. An empty `due_date` or
+  `buyer_reference` is left out of the body.
+- **Options > Response > Response Format** Text, **Put Output in Field**
+  `data`: the XRechnung XML, which **Attach as XML file** turns into the file.
+
 ## Scope and limits
 
 - One row is one invoice with one line at one VAT rate (category `S`). For more
@@ -65,6 +81,7 @@ published `generate_invoice` example.
   not check that the prices or the VAT treatment are right for your business.
 - Numbers may be written `1234.50` or `1.234,50`.
 - XRechnung needs `buyer_reference` (BR-DE-15). For a buyer who does not ask
-  for XRechnung, set the flavor to `en16931` in **Generate XRechnung**.
+  for XRechnung, set `flavor` to `en16931` in the JSON body of **Generate
+  XRechnung**.
 - Airtable: replace the trigger with an Airtable Trigger whose fields use the
   same names; the rest of the workflow stays as it is.

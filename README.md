@@ -2,7 +2,7 @@
 
 German e-invoices: create ZUGFeRD PDFs and XRechnung, check ZUGFeRD/Factur-X, XRechnung (KoSIT) and Peppol BIS. Free tool, API, MCP.
 
-invowerk creates and checks e-invoices. In the browser it creates ZUGFeRD PDFs and XRechnung from a form and checks each file before download. It checks ZUGFeRD 2.5.2 and Factur-X 1.09.2 PDFs, XRechnung 3.0.2 (UBL and CII) and Peppol BIS Billing 3.0.21. XRechnung goes through the KoSIT validator; PDFs are also checked for PDF/A. Each check returns a report with the file's SHA-256, rule sets and result. Invoices are processed in memory, not stored. Free web tool; REST API and MCP server with 500 free credits a month.
+invowerk creates and checks e-invoices. In the browser it creates ZUGFeRD PDFs and XRechnung from a form and checks each file before download. It checks ZUGFeRD 2.5.2 and Factur-X 1.09.2 PDFs, XRechnung 3.0.2 (UBL and CII) and Peppol BIS Billing 3.0.21. XRechnung goes through the KoSIT validator; PDFs are also checked for PDF/A. Each check returns a report with the file's SHA-256, rule sets and result. Uploaded invoices are processed in memory, not stored. Free web tool; REST API and MCP server with 500 free credits a month.
 
 Official integrations for the [invowerk API](https://invowerk.dev), generated from its [OpenAPI document](openapi.json) and published from this repository.
 
@@ -12,10 +12,8 @@ Official integrations for the [invowerk API](https://invowerk.dev), generated fr
 
 ## Integrations
 
-- **n8n** — community node [`@invowerk-dev/n8n-nodes-invowerk`](https://www.npmjs.com/package/@invowerk-dev/n8n-nodes-invowerk), install it under Settings → Community Nodes
 - **Dify** — [`podshalocef/invowerk`](https://marketplace.dify.ai/plugin/podshalocef/invowerk) on the Dify Marketplace
 - **Python SDK** — `pip install invowerk` · [PyPI](https://pypi.org/project/invowerk/)
-- **TypeScript SDK** — `npm install @invowerk-dev/sdk` · [npm](https://www.npmjs.com/package/@invowerk-dev/sdk)
 - **GitHub Action** — [`invowerk-dev/invowerk-action`](https://github.com/marketplace/actions/invowerk-api) on the GitHub Marketplace
 
 ## Templates

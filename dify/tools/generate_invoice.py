@@ -94,6 +94,26 @@ OPERATION = {
             "type": "object"
         },
         {
+            "name": "deliver_to_name",
+            "location": "json",
+            "type": "string"
+        },
+        {
+            "name": "deliver_to_id",
+            "location": "json",
+            "type": "string"
+        },
+        {
+            "name": "deliver_to_id_scheme",
+            "location": "json",
+            "type": "string"
+        },
+        {
+            "name": "order_reference",
+            "location": "json",
+            "type": "string"
+        },
+        {
             "name": "preceding_invoices",
             "location": "json",
             "type": "array"

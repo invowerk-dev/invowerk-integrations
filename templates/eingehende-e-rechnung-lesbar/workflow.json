@@ -3,8 +3,8 @@
   "nodes": [
     {
       "parameters": {
-        "content": "## Incoming e-invoices, made readable\nWatches a mailbox. For every XML or PDF attachment it:\n- reads the invoice with invowerk (**Parse Invoice**) and appends one row to a sheet: number, dates, seller, totals, IBAN;\n- for XML invoices (XRechnung), renders a readable HTML view (**Render Invoice**) and emails it to your bookkeeping address.\n\n### Setup\n1. Install the community node `@invowerk-dev/n8n-nodes-invowerk`.\n2. Get an API key: https://invowerk.dev/go/tpl-eingehende-e-rechnung-lesbar?to=/app/api-keys\n3. Connect IMAP and SMTP, pick the sheet in **Append to invoice log**, set the address in **Send readable copy**.\n4. Test: email yourself https://invowerk.dev/app-static/demo/beispiel-xrechnung.xml",
-        "height": 460,
+        "content": "## Incoming e-invoices, made readable\nWatches a mailbox. For every XML or PDF attachment it:\n- reads the invoice with the invowerk API (`POST /v1/parse`) and appends one row to a sheet: number, dates, seller, totals, IBAN;\n- for XML invoices (XRechnung), renders a readable HTML view (`POST /v1/render`) and emails it to your bookkeeping address.\n\nEvery node ships with n8n, so the workflow runs on n8n Cloud and self-hosted n8n.\n\n### Setup\n1. Get an API key: https://invowerk.dev/go/tpl-eingehende-e-rechnung-lesbar?to=/app/api-keys\n2. Create a **Header Auth** credential (name `X-API-Key`, value your API key) and pick it in **Parse invoice** and **Render readable view**.\n3. Connect IMAP and SMTP, pick the sheet in **Append to invoice log**, set the address in **Send readable copy**.\n4. Test: email yourself https://invowerk.dev/app-static/demo/beispiel-xrechnung.xml",
+        "height": 580,
         "width": 460
       },
       "id": "15238db9-b830-5548-a97e-740334cb9d19",
@@ -13,12 +13,12 @@
       "typeVersion": 1,
       "position": [
         -560,
-        -420
+        -540
       ]
     },
     {
       "parameters": {
-        "content": "### Plain PDFs\n**Parse invoice** continues on error: a PDF without embedded invoice data still gets a row, with the reason in `status`.",
+        "content": "### Plain PDFs\n**Parse invoice** continues on error: a PDF without embedded invoice data still gets a row, with invowerk's reason in `status`.",
         "height": 200,
         "width": 300,
         "color": 5
@@ -34,7 +34,7 @@
     },
     {
       "parameters": {
-        "content": "### Labels\n**Render readable view** uses German labels (`lang = de`). Set `en` for English.",
+        "content": "### Labels\n**Render readable view** asks for German labels (query parameter `lang` = `de`). Set `en` for English.",
         "height": 160,
         "width": 300,
         "color": 4
@@ -80,14 +80,33 @@
     },
     {
       "parameters": {
-        "resource": "invowerk",
-        "operation": "parse_invoice",
-        "binaryPropertyName": "data"
+        "method": "POST",
+        "url": "https://api.invowerk.dev/v1/parse",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
       },
       "id": "f3451565-3e17-5a1d-a79b-5c6e9608c912",
       "name": "Parse invoice",
-      "type": "@invowerk-dev/n8n-nodes-invowerk.invowerk",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
       "position": [
         80,
         -100
@@ -97,7 +116,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// One sheet row per attachment. A file that is not an e-invoice (a plain\n// PDF, say) gets a row too, with the reason in `status`.\nconst file = $('One item per attachment').item.json;\nconst base = { received_from: file.from, subject: file.subject, file: file.fileName };\nif ($json.error) {\n  return { json: { ...base, status: `not read: ${$json.error}` } };\n}\nconst m = $json.model ?? {};\nconst totals = m.totals ?? {};\nreturn {\n  json: {\n    ...base,\n    status: 'read',\n    invoice_number: m.invoice_number ?? '',\n    issue_date: m.issue_date ?? '',\n    due_date: m.due_date ?? '',\n    seller: m.seller?.name ?? '',\n    seller_vat_id: m.seller?.vat_id ?? '',\n    currency: m.currency ?? '',\n    net_total: totals.tax_exclusive ?? '',\n    gross_total: totals.tax_inclusive ?? '',\n    amount_due: totals.payable ?? totals.tax_inclusive ?? '',\n    payment_iban: m.payment_iban ?? '',\n    format: `${$json.detection?.flavor ?? ''} ${$json.detection?.syntax ?? ''}`.trim(),\n    source: $json.source ?? '',\n  },\n};"
+        "jsCode": "// One sheet row per attachment. A file that is not an e-invoice (a plain\n// PDF, say) gets a row too, with the reason in `status`.\nconst file = $('One item per attachment').item.json;\nconst base = { received_from: file.from, subject: file.subject, file: file.fileName };\nif ($json.error) {\n  // Parse invoice continues on error; invowerk's reason is in details.body.detail.\n  const reason = $json.details?.body?.detail ?? $json.error.message ?? $json.error;\n  return { json: { ...base, status: `not read: ${reason}` } };\n}\nconst m = $json.model ?? {};\nconst totals = m.totals ?? {};\nreturn {\n  json: {\n    ...base,\n    status: 'read',\n    invoice_number: m.invoice_number ?? '',\n    issue_date: m.issue_date ?? '',\n    due_date: m.due_date ?? '',\n    seller: m.seller?.name ?? '',\n    seller_vat_id: m.seller?.vat_id ?? '',\n    currency: m.currency ?? '',\n    net_total: totals.tax_exclusive ?? '',\n    gross_total: totals.tax_inclusive ?? '',\n    amount_due: totals.payable ?? totals.tax_inclusive ?? '',\n    payment_iban: m.payment_iban ?? '',\n    format: `${$json.detection?.flavor ?? ''} ${$json.detection?.syntax ?? ''}`.trim(),\n    source: $json.source ?? '',\n  },\n};"
       },
       "id": "69d28589-f5b7-54d8-ad33-7fbd784032db",
       "name": "Shape sheet row",
@@ -153,17 +172,43 @@
     },
     {
       "parameters": {
-        "resource": "invowerk",
-        "operation": "render_invoice",
-        "binaryPropertyName": "data",
-        "additionalFields": {
-          "lang": "de"
+        "method": "POST",
+        "url": "https://api.invowerk.dev/v1/render",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "lang",
+              "value": "de"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text",
+              "outputPropertyName": "data"
+            }
+          }
         }
       },
       "id": "f30c7dd0-e9f4-52b3-afc2-570c33ff7702",
       "name": "Render readable view",
-      "type": "@invowerk-dev/n8n-nodes-invowerk.invowerk",
-      "typeVersion": 1,
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
       "position": [
         360,
         340
@@ -172,7 +217,7 @@
     {
       "parameters": {
         "mode": "runOnceForEachItem",
-        "jsCode": "// The node returns the readable view as HTML text in `data`; make it a file.\nconst file = $('Only XML invoices').item.json;\nreturn {\n  json: { fileName: file.fileName, from: file.from, subject: file.subject },\n  binary: {\n    view: {\n      data: Buffer.from($json.data, 'utf8').toString('base64'),\n      mimeType: 'text/html',\n      fileName: `${file.fileName.replace(/\\.xml$/i, '')}.html`,\n      fileExtension: 'html',\n    },\n  },\n};"
+        "jsCode": "// Render readable view returns the HTML as text in `data`; make it a file.\nconst file = $('Only XML invoices').item.json;\nreturn {\n  json: { fileName: file.fileName, from: file.from, subject: file.subject },\n  binary: {\n    view: {\n      data: Buffer.from($json.data, 'utf8').toString('base64'),\n      mimeType: 'text/html',\n      fileName: `${file.fileName.replace(/\\.xml$/i, '')}.html`,\n      fileExtension: 'html',\n    },\n  },\n};"
       },
       "id": "4779c63d-78e8-590a-9d08-f4ea158622e4",
       "name": "Attach as HTML file",

@@ -170,6 +170,42 @@ parameters:
       en_US: "Deliver-to address (BG-15): where the goods go or the service is performed. Needed for VAT category 'K', intra-community supply (BT-80, BR-IC-12). (JSON object)"
     llm_description: "Deliver-to address (BG-15): where the goods go or the service is performed. Needed for VAT category 'K', intra-community supply (BT-80, BR-IC-12). (JSON object)"
     form: "llm"
+  - name: "deliver_to_name"
+    type: "string"
+    required: false
+    label:
+      en_US: "Deliver to name"
+    human_description:
+      en_US: "Name of the party the goods or services are delivered to (BT-70)."
+    llm_description: "Name of the party the goods or services are delivered to (BT-70)."
+    form: "llm"
+  - name: "deliver_to_id"
+    type: "string"
+    required: false
+    label:
+      en_US: "Deliver to ID"
+    human_description:
+      en_US: "Identifier of the delivery location, e.g. a GLN (BT-71)."
+    llm_description: "Identifier of the delivery location, e.g. a GLN (BT-71)."
+    form: "llm"
+  - name: "deliver_to_id_scheme"
+    type: "string"
+    required: false
+    label:
+      en_US: "Deliver to ID scheme"
+    human_description:
+      en_US: "Scheme of 'deliver_to_id', an ISO/IEC 6523 ICD code, e.g. '0088' for a GLN (BT-71-1). Without it the identifier is written without a scheme."
+    llm_description: "Scheme of 'deliver_to_id', an ISO/IEC 6523 ICD code, e.g. '0088' for a GLN (BT-71-1). Without it the identifier is written without a scheme."
+    form: "llm"
+  - name: "order_reference"
+    type: "string"
+    required: false
+    label:
+      en_US: "Order reference"
+    human_description:
+      en_US: "Purchase order reference: the buyer's order number (BT-13)."
+    llm_description: "Purchase order reference: the buyer's order number (BT-13)."
+    form: "llm"
   - name: "preceding_invoices"
     type: "string"
     required: false
