@@ -12,13 +12,13 @@ identity:
 credentials_for_provider:
   x_api_key:
     type: "secret-input"
-    required: true
+    required: false
     label:
-      en_US: "invowerk API key"
+      en_US: "invowerk API key (optional)"
     placeholder:
-      en_US: "Paste your invowerk API key"
+      en_US: "Leave empty to use the free daily allowance"
     help:
-      en_US: "Create an API key in your invowerk account"
+      en_US: "Get a free invowerk API key"
     url: "https://invowerk.dev/go/dify?to=/app/api-keys"
 tools:
   - "tools/get_me.yaml"
