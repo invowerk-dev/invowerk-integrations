@@ -11,9 +11,10 @@ BASE_URL = 'https://api.invowerk.dev'
 AUTH_HEADER = 'X-API-Key'
 CREDENTIAL = 'x_api_key'
 KEY_URL = 'https://invowerk.dev/go/dify?to=/app/api-keys'
-USER_AGENT = 'invowerk-dify/1.0.20'
+USER_AGENT = 'invowerk-dify/1.0.21'
 TIMEOUT = 240
 TITLE = 'invowerk'
+FORM_FIELDS = 'form_fields'
 
 
 class ApiError(Exception):
@@ -53,9 +54,29 @@ def _value(field, value):
     return value
 
 
+def _items(value):
+    """The values of an array parameter: a list, or comma-separated text."""
+    items = value if isinstance(value, list) else str(value).split(",")
+    return [_text(v).strip() for v in items if _text(v).strip()]
+
+
+def _form_fields(text):
+    """The free fields of an open form: a JSON object of text values."""
+    try:
+        fields = json.loads(text) if isinstance(text, str) else text
+    except ValueError:
+        fields = None
+    if not isinstance(fields, dict) or any(isinstance(v, (dict, list)) for v in fields.values()):
+        raise ApiError(
+            f'{FORM_FIELDS} takes a JSON object of names and text values, '
+            'for example {"landscape": "true"}.'
+        )
+    return {str(name): _text(value) for name, value in fields.items() if value is not None}
+
+
 def request(credentials, operation, params):
     """Send one operation with the tool parameters it was given."""
-    path, query, body, data, files = operation["path"], [], {}, {}, {}
+    path, query, body, data, files = operation["path"], [], {}, {}, []
     for field in operation["fields"]:
         name, where = field["name"], field["location"]
         value = params.get(name)
@@ -65,20 +86,30 @@ def request(credentials, operation, params):
         if where == "path":
             path = path.replace("{" + name + "}", urllib.parse.quote(_text(value), safe=""))
         elif where == "query" and field["type"] == "array":
-            items = value if isinstance(value, list) else str(value).split(",")
-            query += [(name, _text(v).strip()) for v in items if _text(v).strip()]
+            query += [(name, item) for item in _items(value)]
         elif where == "query":
             query.append((name, _text(value)))
         elif where == "json":
             body[name] = value
+        elif where == "form" and field["type"] == "array":
+            data[name] = _items(value)
         elif where == "form":
             data[name] = _text(value)
         else:
-            mime = value.mime_type or "application/octet-stream"
-            files[name] = (value.filename or name, value.blob, mime)
+            for item in value if isinstance(value, list) else [value]:
+                mime = item.mime_type or "application/octet-stream"
+                files.append((name, (item.filename or name, item.blob, mime)))
+    if operation.get("open_form") and params.get(FORM_FIELDS):
+        data.update(_form_fields(params[FORM_FIELDS]))
     send = {}
     if operation["body"] == "json":
         send["json"] = body
+    elif operation["body"] == "multipart" and data and not files:
+        # A multipart route called without a file: a part without a file name
+        # keeps the body multipart (httpx would send a URL-encoded form).
+        for name, value in data.items():
+            for item in value if isinstance(value, list) else [value]:
+                files.append((name, (None, item)))
     elif data:
         send["data"] = data
     if files:
