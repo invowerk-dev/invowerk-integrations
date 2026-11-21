@@ -11,7 +11,7 @@ BASE_URL = 'https://api.invowerk.dev'
 AUTH_HEADER = 'X-API-Key'
 CREDENTIAL = 'x_api_key'
 KEY_URL = 'https://invowerk.dev/go/dify?to=/app/api-keys'
-USER_AGENT = 'invowerk-dify/1.0.21'
+USER_AGENT = 'invowerk-dify/1.0.22'
 TIMEOUT = 240
 TITLE = 'invowerk'
 FORM_FIELDS = 'form_fields'
