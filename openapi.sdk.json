@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "invowerk",
-    "description": "German e-invoices: create ZUGFeRD PDFs and XRechnung, check ZUGFeRD/Factur-X, XRechnung (KoSIT) and Peppol BIS. Free tool, API, MCP.\n\nBase URL: `https://api.invowerk.dev`.\n\n### Authentication\nSend your key in the `X-API-Key` header. Calls without a key run anonymously at\na lower rate limit per IP address.\n\n### Rate limits\nEvery response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and\n`X-RateLimit-Reset` (seconds until the window resets). Over-budget calls return\n`429` with a `Retry-After` header. Check your live budget at `GET /v1/me`.\n\n### Pagination\nList endpoints return a keyset envelope: `{\"items\": [...], \"next_cursor\": \"...\"}`.\nPass `next_cursor` back as the `?cursor=` query param for the next page; it is\n`null` on the last page.\n\n### Errors\nErrors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) `problem+json` with a\nstable machine-readable **`code`** (e.g. `rate_limited`, `credits_exhausted`,\n`validation_error`). Branch on `code`. The `title` and `detail` text may change.\n\n### Quickstart\n```sh\ncurl -H \"X-API-Key: $API_KEY\" https://api.invowerk.dev/v1/me\n```\n",
+    "title": "Invowerk",
+    "description": "German e-invoices: create ZUGFeRD PDFs and XRechnung, check ZUGFeRD/Factur-X, XRechnung (KoSIT) and Peppol BIS. Web tool, API, MCP.\n\nBase URL: `https://api.invowerk.dev`.\n\n### Authentication\nSend your key in the `X-API-Key` header. Calls without a key run anonymously at\na lower rate limit per IP address.\n\n### Rate limits\nEvery response carries `X-RateLimit-Limit`, `X-RateLimit-Remaining`, and\n`X-RateLimit-Reset` (seconds until the window resets). Over-budget calls return\n`429` with a `Retry-After` header. Check your live budget at `GET /v1/me`.\n\n### Pagination\nList endpoints return a keyset envelope: `{\"items\": [...], \"next_cursor\": \"...\"}`.\nPass `next_cursor` back as the `?cursor=` query param for the next page; it is\n`null` on the last page.\n\n### Errors\nErrors are [RFC 9457](https://www.rfc-editor.org/rfc/rfc9457) `problem+json` with a\nstable machine-readable **`code`** (e.g. `rate_limited`, `credits_exhausted`,\n`validation_error`). Branch on `code`. The `title` and `detail` text may change.\n\n### Quickstart\n```sh\ncurl -H \"X-API-Key: $API_KEY\" https://api.invowerk.dev/v1/me\n```\n",
     "version": "1"
   },
   "servers": [
@@ -102,7 +102,7 @@
           "Transform"
         ],
         "summary": "Convert an e-invoice between UBL and CII",
-        "description": "Convert an e-invoice between UBL and CII.\n\nSend the invoice as for `POST /v1/parse`: XML or a ZUGFeRD / Factur-X PDF, raw\nbody or multipart file part, at most 20 MB. `target_syntax` is required (`ubl`\nor `cii`). `target_flavor` (`en16931` or `xrechnung`) is optional; without it\nthe flavor of the source is kept. invowerk checks the converted XML before\nanswering and never returns an invalid document. The answer is\n`application/xml`; `?format=json` returns `{xml, syntax, flavor,\nself_validation}`. Errors: 422 when the input cannot be read or cannot be\nwritten in the target form (e.g. XRechnung paid by direct debit: invowerk writes\nonly SEPA credit transfer), with an error code at the start of `detail`; 500\nwhen the converted XML fails the check (the credits are refunded); 413, 429\nand 504 as for `POST /v1/parse`. Costs 3 credits.\n\n**Credits:** 3 per call.",
+        "description": "Convert an e-invoice between UBL and CII.\n\nSend the invoice as for `POST /v1/parse`: XML or a ZUGFeRD / Factur-X PDF, raw\nbody or multipart file part, at most 20 MB. `target_syntax` is required (`ubl`\nor `cii`). `target_flavor` (`en16931` or `xrechnung`) is optional; without it\nthe flavor of the source is kept. Invowerk checks the converted XML before\nanswering and never returns an invalid document. The answer is\n`application/xml`; `?format=json` returns `{xml, syntax, flavor,\nself_validation}`. Errors: 422 when the input cannot be read or cannot be\nwritten in the target form (e.g. XRechnung paid by direct debit: Invowerk writes\nonly SEPA credit transfer), with an error code at the start of `detail`; 500\nwhen the converted XML fails the check (the credits are refunded); 413, 429\nand 504 as for `POST /v1/parse`. Costs 3 credits.\n\n**Credits:** 3 per call.",
         "operationId": "convert_invoice",
         "security": [
           {
@@ -176,7 +176,7 @@
             }
           },
           "500": {
-            "description": "The converted XML failed invowerk's own check. No document is returned and the credits are refunded.",
+            "description": "The converted XML failed Invowerk's own check. No document is returned and the credits are refunded.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -231,7 +231,7 @@
           "Generation"
         ],
         "summary": "Create an e-invoice from JSON",
-        "description": "Create an EN 16931 e-invoice from JSON.\n\nThe JSON body is keyed on EN 16931 Business Terms (BT-*). `syntax` selects UBL\n(default) or CII. `flavor` selects plain EN 16931 (default) or XRechnung, which\nrequires `buyer_reference` (BT-10, the Leitweg-ID) and `payment_iban` (BT-84).\nA credit note (381) needs CII. The seller needs `identifier` (BT-29),\n`legal_registration_id` (BT-30) or `vat_id` (BT-31). invowerk writes your\namounts as given, with 2 decimals. It does not compute or correct them.\nInput that breaks an EN 16931 or XRechnung rule is a 422 naming each rule,\ne.g. BT-112 = BT-109 + BT-110 (BR-CO-15). Dates are YYYY-MM-DD, amounts go\nup to 999,999,999.99. Before answering, invowerk checks\nthe generated XML and never returns an invalid document. The answer is\n`application/xml`; `?format=json` returns `{xml, syntax, flavor,\nself_validation}`. Errors: 422 for invalid input, with details per field or\nthe rule it breaks; 500 when the generated XML still fails the check (the\ncredits are refunded); 429 when every slot is busy (callers without an API key\nshare one); 504 when it took longer than 20 s. Costs 5 credits.\n\n**Credits:** 5 per call.",
+        "description": "Create an EN 16931 e-invoice from JSON.\n\nThe JSON body is keyed on EN 16931 Business Terms (BT-*). `syntax` selects UBL\n(default) or CII. `flavor` selects plain EN 16931 (default) or XRechnung, which\nrequires `buyer_reference` (BT-10, the Leitweg-ID) and `payment_iban` (BT-84).\nA credit note (381) needs CII. The seller needs `identifier` (BT-29),\n`legal_registration_id` (BT-30) or `vat_id` (BT-31). Invowerk writes your\namounts as given, with 2 decimals. It does not compute or correct them.\nInput that breaks an EN 16931 or XRechnung rule is a 422 naming each rule,\ne.g. BT-112 = BT-109 + BT-110 (BR-CO-15). Dates are YYYY-MM-DD, amounts go\nup to 999,999,999.99. Before answering, Invowerk checks\nthe generated XML and never returns an invalid document. The answer is\n`application/xml`; `?format=json` returns `{xml, syntax, flavor,\nself_validation}`. Errors: 422 for invalid input, with details per field or\nthe rule it breaks; 500 when the generated XML still fails the check (the\ncredits are refunded); 429 when every slot is busy (callers without an API key\nshare one); 504 when it took longer than 20 s. Costs 5 credits.\n\n**Credits:** 5 per call.",
         "operationId": "generate_invoice",
         "security": [
           {
@@ -287,7 +287,7 @@
             }
           },
           "500": {
-            "description": "The generated XML failed invowerk's own check. No document is returned and the credits are refunded. Input that breaks a rule is a 422, not a 500.",
+            "description": "The generated XML failed Invowerk's own check. No document is returned and the credits are refunded. Input that breaks a rule is a 422, not a 500.",
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -319,7 +319,7 @@
           "Rules"
         ],
         "summary": "Explain an error code",
-        "description": "Explain rule codes and invowerk's own `IW-*` Hinweise in German or English.\n\nFor each code the answer has the title, what the rule requires, common causes,\nhow to fix the invoice, the affected Business Terms and `explain_url`, the path\nof the German page under `/codes/`. The codes appear in `findings` and `hints`\nof `POST /v1/validate`. If any code has no explanation, the answer is HTTP 404\nand names those codes. Costs 0 credits; an API key is not needed and does not\nraise the rate limit.\n\n**Credits:** free. This endpoint is not metered.",
+        "description": "Explain rule codes and Invowerk's own `IW-*` Hinweise in German or English.\n\nFor each code the answer has the title, what the rule requires, common causes,\nhow to fix the invoice, the affected Business Terms and `explain_url`, the path\nof the German page under `/codes/`. The codes appear in `findings` and `hints`\nof `POST /v1/validate`. If any code has no explanation, the answer is HTTP 404\nand names those codes. Costs 0 credits; an API key is not needed and does not\nraise the rate limit.\n\n**Credits:** free. This endpoint is not metered.",
         "operationId": "explain_codes",
         "security": [
           {
@@ -395,7 +395,7 @@
           "Rendering"
         ],
         "summary": "Render an e-invoice as HTML",
-        "description": "Render an XML e-invoice as a readable HTML page.\n\nSend an XML invoice (UBL or CII, e.g. XRechnung) as the raw request body or as\na multipart `file` part. PDFs are not accepted. invowerk renders it with the\nKoSIT XRechnung visualization and answers with `text/html`; `?format=json`\nreturns `{html, lang, flavor, syntax}` instead. `lang` sets the label language\n(`de` or `en`; otherwise `Accept-Language`, then `de`). Errors: 400 for an\nempty body, 415 for a file that is not an XML invoice, 422 for malformed XML or\na DOCTYPE, 413 for more than 100,000 elements, 429 when every render slot is\nbusy (callers without an API key share one), 504 when the render ran longer\nthan 20 s. Costs 1 credit.\n\n**Credits:** 1 per call.",
+        "description": "Render an XML e-invoice as a readable HTML page.\n\nSend an XML invoice (UBL or CII, e.g. XRechnung) as the raw request body or as\na multipart `file` part. PDFs are not accepted. Invowerk renders it with the\nKoSIT XRechnung visualization and answers with `text/html`; `?format=json`\nreturns `{html, lang, flavor, syntax}` instead. `lang` sets the label language\n(`de` or `en`; otherwise `Accept-Language`, then `de`). Errors: 400 for an\nempty body, 415 for a file that is not an XML invoice, 422 for malformed XML or\na DOCTYPE, 413 for more than 100,000 elements, 429 when every render slot is\nbusy (callers without an API key share one), 504 when the render ran longer\nthan 20 s. Costs 1 credit.\n\n**Credits:** 1 per call.",
         "operationId": "render_invoice",
         "security": [
           {
@@ -490,7 +490,7 @@
           "Validation"
         ],
         "summary": "Check an e-invoice",
-        "description": "Check an e-invoice against EN 16931 and the German rules.\n\nSend an XML invoice (UBL or CII, e.g. XRechnung) or a ZUGFeRD / Factur-X PDF as\nthe raw request body or as a multipart file part, at most 20 MB. A PDF may have\nat most 500 pages and 16 attachments. invowerk detects the format from the\nbytes, not from the Content-Type. A larger body gets HTTP 413. Otherwise the\nanswer is always HTTP 200, because a failed check is a result, not an error.\n`valid` is the result, `findings` lists each problem, `e_rechnung_de` maps the\nresult onto the BMF categories and `evidence` identifies the checked file.\n`hints` are extra observations that never change `valid`. For XRechnung the\nKoSIT validator decides `valid`. If it is unreachable, invowerk's own check\nwith the same rules decides, `verdict_source` is `local` and the\n`X-EInvoice-Degraded` header is set (`official-lane-unavailable`;\n`pdfa-lane-unavailable` when the PDF/A check did not answer; comma-separated).\n`disagreement` is true when both checks ran and differ. For a PDF,\n`pdfa_verdict` is the PDF/A check with veraPDF. `?explain=true` adds the\nexplanation for rules that have one, in `lang` (`de` or `en`). An XML file\nwith more than 100,000 elements gets HTTP 413. HTTP 429 means every check\nslot is busy (callers without an API key share one), HTTP 504 that the check\nran longer than 20 s. Costs 1 credit.\n\n**Credits:** 1 per call.",
+        "description": "Check an e-invoice against EN 16931 and the German rules.\n\nSend an XML invoice (UBL or CII, e.g. XRechnung) or a ZUGFeRD / Factur-X PDF as\nthe raw request body or as a multipart file part, at most 20 MB. A PDF may have\nat most 500 pages and 16 attachments. Invowerk detects the format from the\nbytes, not from the Content-Type. A larger body gets HTTP 413. Otherwise the\nanswer is always HTTP 200, because a failed check is a result, not an error.\n`valid` is the result, `findings` lists each problem, `e_rechnung_de` maps the\nresult onto the BMF categories and `evidence` identifies the checked file.\n`hints` are extra observations that never change `valid`. For XRechnung the\nKoSIT validator decides `valid`. If it is unreachable, Invowerk's own check\nwith the same rules decides, `verdict_source` is `local` and the\n`X-EInvoice-Degraded` header is set (`official-lane-unavailable`;\n`pdfa-lane-unavailable` when the PDF/A check did not answer; comma-separated).\n`disagreement` is true when both checks ran and differ. For a PDF,\n`pdfa_verdict` is the PDF/A check with veraPDF. `?explain=true` adds the\nexplanation for rules that have one, in `lang` (`de` or `en`). An XML file\nwith more than 100,000 elements gets HTTP 413. HTTP 429 means every check\nslot is busy (callers without an API key share one), HTTP 504 that the check\nran longer than 20 s. Costs 1 credit.\n\n**Credits:** 1 per call.",
         "operationId": "validate_invoice",
         "security": [
           {
@@ -677,7 +677,7 @@
           },
           "self_validation": {
             "$ref": "#/components/schemas/ConvertSelfValidation",
-            "description": "The result of invowerk's own check of the XML."
+            "description": "The result of Invowerk's own check of the XML."
           }
         },
         "type": "object",
@@ -709,7 +709,7 @@
           "finding_count"
         ],
         "title": "ConvertSelfValidation",
-        "description": "The result of invowerk's own check of the converted XML.\n\nIt shows that the XML passed the check before it was returned. An invalid\nresult returns HTTP 500 instead."
+        "description": "The result of Invowerk's own check of the converted XML.\n\nIt shows that the XML passed the check before it was returned. An invalid\nresult returns HTTP 500 instead."
       },
       "CreditsInfo": {
         "properties": {
@@ -767,7 +767,7 @@
               }
             ],
             "title": "Tax Exclusive",
-            "description": "Invoice total without VAT (BT-109). invowerk writes no document-level allowances or charges, so to generate, it must equal the line total (BR-CO-13)."
+            "description": "Invoice total without VAT (BT-109). Invowerk writes no document-level allowances or charges, so to generate, it must equal the line total (BR-CO-13)."
           },
           "tax_inclusive": {
             "anyOf": [
@@ -851,7 +851,7 @@
           "note": {
             "type": "string",
             "title": "Note",
-            "description": "Fixed German note, the same on every answer: invowerk checks the technical format, not whether content and amounts are correct or what tax consequences an error has."
+            "description": "Fixed German note, the same on every answer: Invowerk checks the technical format, not whether content and amounts are correct or what tax consequences an error has."
           }
         },
         "type": "object",
@@ -1001,7 +1001,7 @@
               }
             ],
             "title": "Explain Url",
-            "description": "Path of the explanation page /codes/<CODE> (/en/codes/<CODE> in English), if invowerk has one."
+            "description": "Path of the explanation page /codes/<CODE> (/en/codes/<CODE> in English), if Invowerk has one."
           },
           "explain": {
             "anyOf": [
@@ -1014,7 +1014,7 @@
               }
             ],
             "title": "Explain",
-            "description": "Explanation of the rule (meaning, causes, fixes) in the requested language. Set only with ?explain=true and if invowerk has an entry for the code."
+            "description": "Explanation of the rule (meaning, causes, fixes) in the requested language. Set only with ?explain=true and if Invowerk has an entry for the code."
           },
           "printed_by": {
             "anyOf": [
@@ -1283,7 +1283,7 @@
           "totals"
         ],
         "title": "GenerateRequest",
-        "description": "The request body of POST /v1/generate: an EN 16931 invoice, keyed on\nBusiness Terms (BT-*).\n\nAll amounts are your own figures. invowerk writes them into the XML and\nchecks the result against EN 16931 (and XRechnung, if selected). It does not\ncompute or correct them. Input that breaks an EN 16931 or XRechnung rule is\nrefused (HTTP 422), each rule named. Dates are YYYY-MM-DD, amounts go up to\n999,999,999.99.",
+        "description": "The request body of POST /v1/generate: an EN 16931 invoice, keyed on\nBusiness Terms (BT-*).\n\nAll amounts are your own figures. Invowerk writes them into the XML and\nchecks the result against EN 16931 (and XRechnung, if selected). It does not\ncompute or correct them. Input that breaks an EN 16931 or XRechnung rule is\nrefused (HTTP 422), each rule named. Dates are YYYY-MM-DD, amounts go up to\n999,999,999.99.",
         "examples": [
           {
             "buyer": {
@@ -1361,7 +1361,7 @@
           },
           "self_validation": {
             "$ref": "#/components/schemas/SelfValidation",
-            "description": "The result of invowerk's own check of the XML."
+            "description": "The result of Invowerk's own check of the XML."
           }
         },
         "type": "object",
@@ -1419,7 +1419,7 @@
           "message"
         ],
         "title": "HintInfo",
-        "description": "One hint: an extra observation by invowerk. Hints never change the result."
+        "description": "One hint: an extra observation by Invowerk. Hints never change the result."
       },
       "InvoiceLine": {
         "properties": {
@@ -1581,7 +1581,7 @@
           "customization_id"
         ],
         "title": "ParseDetection",
-        "description": "What invowerk detected about the source document, from its bytes."
+        "description": "What Invowerk detected about the source document, from its bytes."
       },
       "ParseResponse": {
         "properties": {
@@ -1593,7 +1593,7 @@
           },
           "detection": {
             "$ref": "#/components/schemas/ParseDetection",
-            "description": "What invowerk detected: syntax, rule set and CustomizationID."
+            "description": "What Invowerk detected: syntax, rule set and CustomizationID."
           },
           "source": {
             "type": "string",
@@ -1608,7 +1608,7 @@
           "source"
         ],
         "title": "ParseResponse",
-        "description": "The answer of POST /v1/parse: the invoice as JSON and what invowerk detected."
+        "description": "The answer of POST /v1/parse: the invoice as JSON and what Invowerk detected."
       },
       "PostalAddress": {
         "properties": {
@@ -1661,7 +1661,7 @@
           "country_code"
         ],
         "title": "PostalAddress",
-        "description": "A postal address (BG-5 seller, BG-8 buyer, BG-15 deliver-to).\n\nEN 16931 requires only the country. XRechnung also requires city and post\ncode for the seller. invowerk does not check that the address exists."
+        "description": "A postal address (BG-5 seller, BG-8 buyer, BG-15 deliver-to).\n\nEN 16931 requires only the country. XRechnung also requires city and post\ncode for the seller. Invowerk does not check that the address exists."
       },
       "PrecedingInvoice": {
         "properties": {
@@ -1761,7 +1761,7 @@
           "syntax"
         ],
         "title": "RenderResponse",
-        "description": "The answer of POST /v1/render?format=json: the HTML and what invowerk detected."
+        "description": "The answer of POST /v1/render?format=json: the HTML and what Invowerk detected."
       },
       "RuleExplanation": {
         "properties": {
@@ -1881,7 +1881,7 @@
           "lane": {
             "type": "string",
             "title": "Lane",
-            "description": "Which check ran; always 'local' (invowerk's own check)."
+            "description": "Which check ran; always 'local' (Invowerk's own check)."
           },
           "finding_count": {
             "type": "integer",
@@ -1896,7 +1896,7 @@
           "finding_count"
         ],
         "title": "SelfValidation",
-        "description": "The result of invowerk's own check of the generated XML.\n\nOnly in the ?format=json answer. It shows that the XML passed the check\nbefore it was returned."
+        "description": "The result of Invowerk's own check of the generated XML.\n\nOnly in the ?format=json answer. It shows that the XML passed the check\nbefore it was returned."
       },
       "Seller": {
         "properties": {
@@ -2133,27 +2133,27 @@
           "valid": {
             "type": "boolean",
             "title": "Valid",
-            "description": "The overall result. For the XML, the KoSIT validator decides when it answered (verdict_source 'official'); otherwise invowerk's own check decides (no fatal finding). A fatal problem with the PDF of a ZUGFeRD / Factur-X invoice always makes it false."
+            "description": "The overall result. For the XML, the KoSIT validator decides when it answered (verdict_source 'official'); otherwise Invowerk's own check decides (no fatal finding). A fatal problem with the PDF of a ZUGFeRD / Factur-X invoice always makes it false."
           },
           "verdict_source": {
             "type": "string",
             "title": "Verdict Source",
-            "description": "'official' when the KoSIT validator decided the XML result, 'local' when invowerk's own check did (ZUGFeRD or Peppol rules, or KoSIT did not answer)."
+            "description": "'official' when the KoSIT validator decided the XML result, 'local' when Invowerk's own check did (ZUGFeRD or Peppol rules, or KoSIT did not answer)."
           },
           "local_verdict": {
             "type": "string",
             "title": "Local Verdict",
-            "description": "invowerk's own result, 'valid' or 'invalid': 'invalid' when any format, business rule or PDF finding is fatal."
+            "description": "Invowerk's own result, 'valid' or 'invalid': 'invalid' when any format, business rule or PDF finding is fatal."
           },
           "disagreement": {
             "type": "boolean",
             "title": "Disagreement",
-            "description": "True when the KoSIT validator and invowerk's own check reach different results for the XML. The KoSIT result decides; the findings explain the difference."
+            "description": "True when the KoSIT validator and Invowerk's own check reach different results for the XML. The KoSIT result decides; the findings explain the difference."
           },
           "lane": {
             "type": "string",
             "title": "Lane",
-            "description": "'official' when invowerk asked the KoSIT validator (even if it did not answer), else 'local'."
+            "description": "'official' when Invowerk asked the KoSIT validator (even if it did not answer), else 'local'."
           },
           "official_verdict": {
             "anyOf": [
@@ -2194,7 +2194,7 @@
             "additionalProperties": true,
             "type": "object",
             "title": "Detection",
-            "description": "What invowerk detected from the bytes: kind, syntax, flavor, customization_id, is_hybrid_pdf. For a PDF it describes the embedded XML."
+            "description": "What Invowerk detected from the bytes: kind, syntax, flavor, customization_id, is_hybrid_pdf. For a PDF it describes the embedded XML."
           },
           "errors": {
             "$ref": "#/components/schemas/ErrorClasses",
@@ -2230,7 +2230,7 @@
             },
             "type": "array",
             "title": "Hints",
-            "description": "Extra observations by invowerk (IW-* codes), e.g. a wrong IBAN check digit. They never change valid, verdict_source or e_rechnung_de."
+            "description": "Extra observations by Invowerk (IW-* codes), e.g. a wrong IBAN check digit. They never change valid, verdict_source or e_rechnung_de."
           }
         },
         "type": "object",
@@ -2253,12 +2253,12 @@
           "invowerk": {
             "type": "string",
             "title": "Invowerk",
-            "description": "The invowerk version, or 'unknown'."
+            "description": "The Invowerk version, or 'unknown'."
           },
           "appkit": {
             "type": "string",
             "title": "Appkit",
-            "description": "The version of the platform invowerk runs on, or 'unknown'."
+            "description": "The version of the platform Invowerk runs on, or 'unknown'."
           }
         },
         "type": "object",

@@ -1,7 +1,7 @@
 # Validate e-invoices in CI (GitHub Actions)
 
 A GitHub Actions workflow that checks every e-invoice in a folder of your
-repository with [invowerk](https://invowerk.dev) on each push and pull request,
+repository with [Invowerk](https://invowerk.dev) on each push and pull request,
 and fails the run when one of them is invalid.
 
 Use it when your software produces e-invoices and you keep sample or test
@@ -12,11 +12,11 @@ invoice.
 
 ## What it checks
 
-Each XML or PDF file is sent to invowerk's `validate_invoice` operation, which
+Each XML or PDF file is sent to Invowerk's `validate_invoice` operation, which
 checks XRechnung, ZUGFeRD / Factur-X and Peppol BIS invoices against the EN 16931
 rules and, for XRechnung, against the official KoSIT rule set. The step fails
 when the answer's `valid` is `false`, and prints the findings, with
-invowerk's explanation for each rule it has one for. invowerk checks the
+Invowerk's explanation for each rule it has one for. Invowerk checks the
 invoice format and its rules; it does not check whether the amounts or the tax
 treatment are right for your business.
 

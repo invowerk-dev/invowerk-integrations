@@ -6,7 +6,7 @@ identity:
 description:
   human:
     en_US: "Explain an error code."
-  llm: "Explain an error code. Explain rule codes and invowerk's own `IW-*` Hinweise in German or English."
+  llm: "Explain an error code. Explain rule codes and Invowerk's own `IW-*` Hinweise in German or English."
 parameters:
   - name: "code"
     type: "string"

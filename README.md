@@ -1,10 +1,10 @@
-# invowerk integrations
+# Invowerk integrations
 
-German e-invoices: create ZUGFeRD PDFs and XRechnung, check ZUGFeRD/Factur-X, XRechnung (KoSIT) and Peppol BIS. Free tool, API, MCP.
+German e-invoices: create ZUGFeRD PDFs and XRechnung, check ZUGFeRD/Factur-X, XRechnung (KoSIT) and Peppol BIS. Web tool, API, MCP.
 
-invowerk creates and checks e-invoices. In the browser it creates ZUGFeRD PDFs and XRechnung from a form and checks each file before download. It checks ZUGFeRD 2.5.2 and Factur-X 1.09.2 PDFs, XRechnung 3.0.2 (UBL and CII) and Peppol BIS Billing 3.0.21. XRechnung goes through the KoSIT validator; PDFs are also checked for PDF/A. Each check returns a report with the file's SHA-256, rule sets and result. Uploaded invoices are processed in memory, not stored. Free web tool; REST API and MCP server with 500 free credits a month.
+Invowerk creates and checks e-invoices. In the browser it creates ZUGFeRD PDFs and XRechnung from a form and checks each file before download. It checks ZUGFeRD 2.5.2 and Factur-X 1.09.2 PDFs, XRechnung 3.0.2 (UBL and CII) and Peppol BIS Billing 3.0.21. XRechnung goes through the KoSIT validator; PDFs are also checked for PDF/A. Each check returns a report with the file's SHA-256, rule sets and result. Uploaded invoices are processed in memory, not stored. Web tool, REST API and MCP server.
 
-Official integrations for the [invowerk API](https://invowerk.dev), generated from its [OpenAPI document](openapi.json) and published from this repository.
+Official integrations for the [Invowerk API](https://invowerk.dev), generated from its [OpenAPI document](openapi.json) and published from this repository.
 
 ## Get an API key
 

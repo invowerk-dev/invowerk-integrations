@@ -1,7 +1,7 @@
 # Sheet row to XRechnung, sent by email (n8n)
 
 An n8n workflow that turns each new row of an invoice sheet into an XRechnung
-and emails it to the buyer. invowerk builds the XML (UBL syntax, XRechnung
+and emails it to the buyer. Invowerk builds the XML (UBL syntax, XRechnung
 rules) and checks it before it is returned.
 
 Use it when you write invoices as rows in Google Sheets (or Airtable) and a
@@ -17,7 +17,7 @@ n8n.
    invoice totals.
 3. **Generate XRechnung** (HTTP Request, `POST https://api.invowerk.dev/v1/generate`):
    sends those fields as JSON with flavor `xrechnung` and syntax `ubl`, and
-   gets the XML back as text. invowerk checks the XML it built: an invoice
+   gets the XML back as text. Invowerk checks the XML it built: an invoice
    that breaks an EN 16931 or XRechnung rule is never returned, the node fails
    instead. Missing or malformed fields come back as an error naming the field.
 4. **Attach as XML file** (Code): turns the XML text into an `<invoice number>.xml`
@@ -56,7 +56,7 @@ n8n.
 6. Connect a Gmail account in **Email the invoice**.
 
 The trigger carries one pinned sample row. Disable **Email the invoice** and run
-the workflow once to see the generated XML; its data matches invowerk's
+the workflow once to see the generated XML; its data matches Invowerk's
 published `generate_invoice` example.
 
 ## The HTTP Request node
@@ -76,7 +76,7 @@ published `generate_invoice` example.
 
 - One row is one invoice with one line at one VAT rate (category `S`). For more
   lines, extend `lines` and `tax_breakdown` in **Build invoice body**.
-- The amounts are computed by the Code node, not by invowerk. invowerk writes
+- The amounts are computed by the Code node, not by Invowerk. Invowerk writes
   them into the XML as given and checks the result against the rules; it does
   not check that the prices or the VAT treatment are right for your business.
 - Numbers may be written `1234.50` or `1.234,50`.

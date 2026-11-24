@@ -1,4 +1,4 @@
-# Validate every e-invoice in a folder of this repository with invowerk.
+# Validate every e-invoice in a folder of this repository with Invowerk.
 #
 # Copy this file to .github/workflows/validate-e-invoices.yml. On every push and
 # pull request that touches the folder, each XML or PDF invoice in it is checked
@@ -51,20 +51,20 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      # Callers without an API key share invowerk's check slots (HTTP 429 when
+      # Callers without an API key share Invowerk's check slots (HTTP 429 when
       # all are busy); a few files at a time keeps a large folder polite.
       max-parallel: 4
       matrix:
         file: ${{ fromJSON(needs.list.outputs.files) }}
     steps:
       - uses: actions/checkout@v7.0.1
-      - name: Validate with invowerk
+      - name: Validate with Invowerk
         uses: invowerk-dev/invowerk-action@v1.0.0
         with:
           operation: validate_invoice
           file: ${{ matrix.file }}
           api-key: ${{ secrets.INVOWERK_API_KEY }}
-          # explain=true adds invowerk's explanation (meaning, causes, fixes)
+          # explain=true adds Invowerk's explanation (meaning, causes, fixes)
           # to each finding whose rule it has one for.
           query: |
             explain=true

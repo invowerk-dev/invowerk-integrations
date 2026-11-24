@@ -2,7 +2,7 @@ identity:
   author: "podshalocef"
   name: "invowerk"
   label:
-    en_US: "invowerk"
+    en_US: "Invowerk"
   description:
     en_US: "Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRechnung, ZUGFeRD and Factur-X invoices into fields."
   icon: "icon.svg"
@@ -14,11 +14,11 @@ credentials_for_provider:
     type: "secret-input"
     required: false
     label:
-      en_US: "invowerk API key (optional)"
+      en_US: "Invowerk API key (optional)"
     placeholder:
       en_US: "Leave empty to use the free daily allowance"
     help:
-      en_US: "Get a free invowerk API key"
+      en_US: "Get a free Invowerk API key"
     url: "https://invowerk.dev/go/dify?to=/app/api-keys"
 tools:
   - "tools/get_me.yaml"

@@ -18,7 +18,7 @@ with n8n, so the workflow runs on n8n Cloud and on a self-hosted n8n.
 3. **Parse invoice** (HTTP Request, `POST https://api.invowerk.dev/v1/parse`):
    reads XRechnung (UBL or CII) and the invoice data embedded in a ZUGFeRD /
    Factur-X PDF, and answers with JSON. It continues on error, so a PDF
-   without invoice data still gets a row, with invowerk's reason in `status`.
+   without invoice data still gets a row, with Invowerk's reason in `status`.
 4. **Shape sheet row** (Code) and **Append to invoice log** (Google Sheets):
    sender, subject, file, invoice number, dates, seller and VAT ID, currency,
    net and gross totals, amount due, IBAN, format.
@@ -56,7 +56,7 @@ multipart field `file` (**Body Content Type** Form-Data, parameter type
 **n8n Binary File**).
 
 - **Parse invoice**: `POST https://api.invowerk.dev/v1/parse`, **Response
-  Format** JSON. Its **On Error** setting is "Continue": a file invowerk
+  Format** JSON. Its **On Error** setting is "Continue": a file Invowerk
   cannot read becomes an item with `error`, and **Shape sheet row** writes the
   reason from `details.body.detail` into `status`.
 - **Render readable view**: `POST https://api.invowerk.dev/v1/render` with the

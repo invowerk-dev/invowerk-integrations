@@ -1,15 +1,15 @@
-# invowerk
+# Invowerk
 
 Create XRechnung and EN 16931 e-invoices from your data, and read incoming XRechnung, ZUGFeRD and Factur-X invoices into fields.
 
-invowerk creates and reads e-invoices. Generate turns invoice data, keyed on EN 16931 Business Terms, into XRechnung or EN 16931 XML in UBL or CII. Amounts are written as given, and invowerk checks the result before returning it. Parse reads an incoming XML invoice or ZUGFeRD / Factur-X PDF into the same fields. Validate, render as HTML, convert between UBL and CII, and explain error codes are available too. Invoices are processed in memory, not stored. 500 free credits per month.
+Invowerk creates and reads e-invoices. Generate turns invoice data, keyed on EN 16931 Business Terms, into XRechnung or EN 16931 XML in UBL or CII. Amounts are written as given, and Invowerk checks the result before returning it. Parse reads an incoming XML invoice or ZUGFeRD / Factur-X PDF into the same fields. Validate, render as HTML, convert between UBL and CII, and explain error codes are available too. Invoices are processed in memory, not stored.
 
-A Dify tool plugin for the [invowerk API](https://invowerk.dev).
+A Dify tool plugin for the [Invowerk API](https://invowerk.dev).
 
 ## Setup
 
-1. Install **invowerk** from the Dify Marketplace (Plugins → Marketplace).
-2. Open the plugin's tool settings and choose **Authorize**. Leave the API key empty to try the tools on the free daily allowance, or paste a [free invowerk API key](https://invowerk.dev/go/dify?to=/app/api-keys) for your account's monthly credits.
+1. Install **Invowerk** from the Dify Marketplace (Plugins → Marketplace).
+2. Open the plugin's tool settings and choose **Authorize**. Leave the API key empty to try the tools on the free daily allowance, or paste a [free Invowerk API key](https://invowerk.dev/go/dify?to=/app/api-keys) for your account's monthly credits.
 
 Without a key, every call from one network address shares the free daily allowance. On Dify Cloud the calls come from Dify's servers, so other users may draw on the same allowance. Once it is used up, the tool's error says where to get a key.
 

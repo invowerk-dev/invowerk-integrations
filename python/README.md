@@ -1,6 +1,6 @@
-# invowerk — Python SDK
+# Invowerk — Python SDK
 
-Python client for the invowerk API: validate XRechnung, ZUGFeRD, Factur-X and Peppol BIS e-invoices from your code or CI.
+Python client for the Invowerk API: validate XRechnung, ZUGFeRD, Factur-X and Peppol BIS e-invoices from your code or CI.
 
 ```sh
 pip install invowerk
