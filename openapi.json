@@ -760,6 +760,12 @@
               }
             ],
             "title": "Period End"
+          },
+          "pack": {
+            "type": "integer",
+            "title": "Pack",
+            "description": "Credits left in your one-time packs, spent after the monthly credits run out. They do not expire.",
+            "default": 0
           }
         },
         "type": "object",
